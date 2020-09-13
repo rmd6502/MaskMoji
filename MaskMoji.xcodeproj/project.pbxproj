@@ -13,6 +13,9 @@
 		83806564250DD19D005906D1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83806562250DD19D005906D1 /* Main.storyboard */; };
 		83806566250DD1A0005906D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83806565250DD1A0005906D1 /* Assets.xcassets */; };
 		83806569250DD1A0005906D1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83806567250DD1A0005906D1 /* LaunchScreen.storyboard */; };
+		83806571250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */; };
+		83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */; };
+		83A1FD23250EBCAC0063473C /* BluetoothDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		83806565250DD1A0005906D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83806568250DD1A0005906D1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8380656A250DD1A0005906D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskMojiCellCollectionViewCell.swift; sourceTree = "<group>"; };
+		83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTableViewController.swift; sourceTree = "<group>"; };
+		83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDataSource.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +62,42 @@
 		8380655B250DD19D005906D1 /* MaskMoji */ = {
 			isa = PBXGroup;
 			children = (
+				83A1FD21250EBC680063473C /* Workers */,
+				83A1FD20250EBC570063473C /* Views */,
+				83A1FD1F250EBC430063473C /* ViewControllers */,
 				8380655C250DD19D005906D1 /* AppDelegate.swift */,
 				8380655E250DD19D005906D1 /* SceneDelegate.swift */,
-				83806560250DD19D005906D1 /* ViewController.swift */,
 				83806562250DD19D005906D1 /* Main.storyboard */,
 				83806565250DD1A0005906D1 /* Assets.xcassets */,
 				83806567250DD1A0005906D1 /* LaunchScreen.storyboard */,
 				8380656A250DD1A0005906D1 /* Info.plist */,
 			);
 			path = MaskMoji;
+			sourceTree = "<group>";
+		};
+		83A1FD1F250EBC430063473C /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				83806560250DD19D005906D1 /* ViewController.swift */,
+				83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		83A1FD20250EBC570063473C /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		83A1FD21250EBC680063473C /* Workers */ = {
+			isa = PBXGroup;
+			children = (
+				83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */,
+			);
+			path = Workers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,8 +172,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				83806561250DD19D005906D1 /* ViewController.swift in Sources */,
+				83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */,
+				83806571250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift in Sources */,
 				8380655D250DD19D005906D1 /* AppDelegate.swift in Sources */,
 				8380655F250DD19D005906D1 /* SceneDelegate.swift in Sources */,
+				83A1FD23250EBCAC0063473C /* BluetoothDataSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +323,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QVSQY52MWK;
 				INFOPLIST_FILE = MaskMoji/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -305,6 +342,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QVSQY52MWK;
 				INFOPLIST_FILE = MaskMoji/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
