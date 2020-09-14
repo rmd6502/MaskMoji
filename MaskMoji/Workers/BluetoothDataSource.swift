@@ -15,19 +15,68 @@ protocol BluetoothDataSourceDelegate {
     func devicesFound(_ devices : [CBPeripheral])
 }
 
-class BluetoothDataSource: NSObject {
+class BluetoothDataSource: NSObject, CBCentralManagerDelegate {
+    static var serviceId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
     var q : DispatchQueue
     public var delegate : BluetoothDataSourceDelegate? = nil
+    var centralManager : CBCentralManager!
+    var isPoweredOn = false
+    var peripherals = [CBPeripheral]()
+    var closures = [UUID : (Bool) -> Void]()
     
     override init() {
         q = DispatchQueue(label: "Bluetooth")
         super.init()
-        q.async {
-            self.startScan()
-        }
+        centralManager = CBCentralManager(delegate: self, queue: q)
     }
     
     func startScan() {
-        
+        centralManager.scanForPeripherals(withServices: [CBUUID(string: BluetoothDataSource.serviceId)], options: .none)
+    }
+    
+    func stopScan() {
+        centralManager.stopScan()
+    }
+    
+    func connectToPeripheral(_ peripheral: CBPeripheral, resultBlock: @escaping (_ success: Bool) -> Void) {
+        closures[peripheral.identifier] = resultBlock
+        centralManager.connect(peripheral, options: .none)
+    }
+    
+    // MARK: - CBCentralManagerDelegate
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        switch central.state {
+        case .poweredOn:
+            isPoweredOn = true
+            startScan()
+        case .poweredOff:
+            isPoweredOn = false
+            stopScan()
+        default:
+            break
+        }
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        peripherals.append(peripheral)
+        DispatchQueue.main.async {
+            self.delegate?.devicesFound(self.peripherals)
+        }
+    }
+    
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        guard let closure = closures[peripheral.identifier] else {
+            return
+        }
+        closures[peripheral.identifier] = nil
+        closure(true)
+    }
+    
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        guard let closure = closures[peripheral.identifier] else {
+            return
+        }
+        closures[peripheral.identifier] = nil
+        closure(false)
     }
 }
