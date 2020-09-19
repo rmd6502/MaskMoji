@@ -8,7 +8,6 @@
 
 import UIKit
 
-class MaskMojiCellCollectionViewCell: UICollectionViewCell {
-    
+class MaskMojiCellCollectionViewCell: UICollectionViewCell {    
     @IBOutlet weak var maskMojiLabel: UILabel!
 }

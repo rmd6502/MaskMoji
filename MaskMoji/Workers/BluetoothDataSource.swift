@@ -15,8 +15,9 @@ protocol BluetoothDataSourceDelegate {
     func devicesFound(_ devices : [CBPeripheral])
 }
 
-class BluetoothDataSource: NSObject, CBCentralManagerDelegate {
+class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     static var serviceId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
+    static var characteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
     var q : DispatchQueue
     public var delegate : BluetoothDataSourceDelegate? = nil
     var centralManager : CBCentralManager!
@@ -65,11 +66,18 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        peripheral.delegate = self
+        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.characteristicId)], for: (peripheral.services?.first(where: { (service : CBService) -> Bool in
+            service.uuid.uuidString == BluetoothDataSource.serviceId
+        }))!)
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let closure = closures[peripheral.identifier] else {
             return
         }
         closures[peripheral.identifier] = nil
-        closure(true)
+        closure(error == nil)
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {

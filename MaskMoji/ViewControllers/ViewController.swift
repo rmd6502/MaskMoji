@@ -7,8 +7,10 @@
 //
 
 import UIKit
+import CoreBluetooth
 
-class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate {
+    var peripheral : CBPeripheral? = nil
     
     static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","😡","😱"];
 
@@ -52,6 +54,16 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let dest = segue.destination as? BluetoothTableViewController {
+            dest.delegate = self
+        }
+    }
+    
+    func peripheralChosen(_ peripheral: CBPeripheral?) {
+        self.peripheral = peripheral
     }
 }
 

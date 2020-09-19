@@ -7,10 +7,15 @@
 //
 
 import UIKit
+import CoreBluetooth
 
+protocol BluetoothVCDelegate {
+    func peripheralChosen(_ peripheral: CBPeripheral?)
+}
 class BluetoothTableViewController: UITableViewController {
 
     var bluetoothDataSource : BluetoothDataSource? = nil
+    var delegate : BluetoothVCDelegate? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +42,15 @@ class BluetoothTableViewController: UITableViewController {
         cell.textLabel?.text = bluetoothDataSource?.peripherals[indexPath.row].identifier.uuidString
 
         return cell
+    }
+    
+    // MARK: - Table View Delegate
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let peripheral = bluetoothDataSource?.peripherals[indexPath.row]
+        bluetoothDataSource?.connectToPeripheral(peripheral!, resultBlock: { (success : Bool) in
+            self.delegate?.peripheralChosen(peripheral)
+            self.dismiss(animated: true, completion: nil)
+        })
     }
 
     /*
@@ -74,14 +88,13 @@ class BluetoothTableViewController: UITableViewController {
     }
     */
 
-    /*
+
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    //override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-    }
-    */
+    //}
 
 }
