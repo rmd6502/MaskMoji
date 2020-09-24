@@ -328,6 +328,32 @@ Wire Wire Line
 Connection ~ 7900 2850
 Wire Wire Line
 	7900 2850 7900 2900
+Text Label 6750 2350 0    50   ~ 0
+Backlight
 Wire Wire Line
-	7100 2350 6900 2350
+	6700 2350 7100 2350
+Wire Wire Line
+	3450 2650 3450 3050
+Text Label 3450 3000 1    50   ~ 0
+Backlight
+Wire Wire Line
+	4850 2650 4850 3500
+Wire Wire Line
+	4950 2650 4950 3500
+Wire Wire Line
+	5050 2650 5050 3500
+Wire Wire Line
+	5150 2650 5150 3500
+Text Label 4850 3300 1    50   ~ 0
+~CS
+Text Label 4950 3300 1    50   ~ 0
+SCK
+Text Label 5050 3300 1    50   ~ 0
+MOSI
+Text Label 5150 3300 1    50   ~ 0
+MISO
+Text Notes 9750 2050 1    50   ~ 0
+Display FPC Connector
+Text Notes 5450 6750 2    50   ~ 0
+Battery
 $EndSCHEMATC

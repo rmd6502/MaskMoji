@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
+Title "MaskMoji Schematic"
+Date "2020-09-18"
+Rev "0.1"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -336,4 +336,24 @@ Wire Wire Line
 	3450 2650 3450 3050
 Text Label 3450 3000 1    50   ~ 0
 Backlight
+Wire Wire Line
+	4850 2650 4850 3500
+Wire Wire Line
+	4950 2650 4950 3500
+Wire Wire Line
+	5050 2650 5050 3500
+Wire Wire Line
+	5150 2650 5150 3500
+Text Label 4850 3300 1    50   ~ 0
+~CS
+Text Label 4950 3300 1    50   ~ 0
+SCK
+Text Label 5050 3300 1    50   ~ 0
+MOSI
+Text Label 5150 3300 1    50   ~ 0
+MISO
+Text Notes 9750 2050 1    50   ~ 0
+Display FPC Connector
+Text Notes 5450 6750 2    50   ~ 0
+Battery
 $EndSCHEMATC
