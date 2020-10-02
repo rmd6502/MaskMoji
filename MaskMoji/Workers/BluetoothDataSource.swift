@@ -33,6 +33,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     
     func startScan() {
         centralManager.scanForPeripherals(withServices: [CBUUID(string: BluetoothDataSource.serviceId)], options: .none)
+        //centralManager.scanForPeripherals(withServices: [CBUUID(string: BluetoothDataSource.serviceId)], options: .none)
     }
     
     func stopScan() {
@@ -67,7 +68,12 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         peripheral.delegate = self
-        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.characteristicId)], for: (peripheral.services?.first(where: { (service : CBService) -> Bool in
+        peripheral.discoverServices([CBUUID(string: BluetoothDataSource.serviceId)])
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        guard let services = peripheral.services else { return }
+        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.characteristicId)], for: (services.first(where: { (service : CBService) -> Bool in
             service.uuid.uuidString == BluetoothDataSource.serviceId
         }))!)
     }
@@ -77,7 +83,9 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
             return
         }
         closures[peripheral.identifier] = nil
-        closure(error == nil)
+        DispatchQueue.main.async {
+            closure(error == nil)
+        }
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {

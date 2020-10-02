@@ -34,7 +34,6 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MaskMojiCell", for: indexPath) as? MaskMojiCellCollectionViewCell {
             cell.maskMojiLabel.text = ViewController.emojis[indexPath.row];
             cell.maskMojiLabel.font = UIFont.systemFont(ofSize: cell.bounds.height/2)
-            cell.contentView.backgroundColor = UIColor.red;
             return cell;
         }
         return UICollectionViewCell();
@@ -54,6 +53,11 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
+        guard let peripheral = self.peripheral else { return }
+        if ViewController.emojis.count <= indexPath.item { return }
+        let s = ViewController.emojis[indexPath.item].unicodeScalars.first
+        let fn = String(format: "%lx", s!.value)
+        peripheral.writeValue(fn.data(using: .utf8)!, for: (peripheral.services?.first?.characteristics?.first)!, type: .withResponse)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

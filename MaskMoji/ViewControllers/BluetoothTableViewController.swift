@@ -17,7 +17,6 @@ class BluetoothTableViewController: UITableViewController, BluetoothDataSourceDe
         tableView.reloadData()
     }
     
-
     var bluetoothDataSource : BluetoothDataSource? = nil
     var delegate : BluetoothVCDelegate? = nil
     
@@ -40,7 +39,7 @@ class BluetoothTableViewController: UITableViewController, BluetoothDataSourceDe
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BluetoothPeripheral", for: indexPath)
-        cell.textLabel?.text = bluetoothDataSource?.peripherals[indexPath.row].identifier.uuidString
+        cell.textLabel?.text = bluetoothDataSource?.peripherals[indexPath.row].name ?? bluetoothDataSource?.peripherals[indexPath.row].identifier.uuidString
 
         return cell
     }
@@ -50,7 +49,7 @@ class BluetoothTableViewController: UITableViewController, BluetoothDataSourceDe
         let peripheral = bluetoothDataSource?.peripherals[indexPath.row]
         bluetoothDataSource?.connectToPeripheral(peripheral!, resultBlock: { (success : Bool) in
             self.delegate?.peripheralChosen(peripheral)
-            self.dismiss(animated: true, completion: nil)
+            self.navigationController?.popViewController(animated: true)
         })
     }
 
