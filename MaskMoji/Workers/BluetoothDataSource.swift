@@ -60,9 +60,13 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        peripherals.append(peripheral)
-        DispatchQueue.main.async {
-            self.delegate?.devicesFound(self.peripherals)
+        if !peripherals.contains(where: { (periph) -> Bool in
+            return periph.name == peripheral.name
+        }) {
+            peripherals.append(peripheral)
+            DispatchQueue.main.async {
+                self.delegate?.devicesFound(self.peripherals)
+            }
         }
     }
     
