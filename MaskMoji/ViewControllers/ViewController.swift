@@ -12,7 +12,7 @@ import CoreBluetooth
 class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate {
     var peripheral : CBPeripheral? = nil
     
-    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","😡","😱"];
+    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,8 +55,14 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
         print("Selected item at \(indexPath)");
         guard let peripheral = self.peripheral else { return }
         if ViewController.emojis.count <= indexPath.item { return }
-        let s = ViewController.emojis[indexPath.item].unicodeScalars.first
-        let fn = String(format: "%lx", s!.value)
+        let emoji = ViewController.emojis[indexPath.item]
+        var fn : String
+        if emoji.count == 1 {
+            let s = ViewController.emojis[indexPath.item].unicodeScalars.first
+            fn = String(format: "%lx", s!.value)
+        } else {
+            fn = emoji
+        }
         peripheral.writeValue(fn.data(using: .utf8)!, for: (peripheral.services?.first?.characteristics?.first)!, type: .withResponse)
     }
     
