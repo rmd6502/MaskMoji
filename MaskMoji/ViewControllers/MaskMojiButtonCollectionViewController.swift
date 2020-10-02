@@ -9,12 +9,12 @@
 import UIKit
 import CoreBluetooth
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate {
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
     
-    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","maskmoji"];
+    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +67,13 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
         guard let peripheral = self.peripheral else { return }
+        if (peripheral.state != .connected) {
+            if (peripheral.state != .connecting) {
+                self.peripheral = nil;
+                subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
+            }
+            return
+        }
         if MaskMojiButtonCollectionViewController.emojis.count <= indexPath.item { return }
         let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
         var fn : String
@@ -87,6 +94,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     func peripheralChosen(_ peripheral: CBPeripheral?) {
         self.peripheral = peripheral
+        peripheral?.delegate = self
         subtitleLabel?.text = peripheral?.name ?? peripheral?.identifier.uuidString ?? NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
     }
     
@@ -102,7 +110,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         subtitleLabel = UILabel(frame: CGRect(x: 0, y: 18, width: 0, height: 0))
         subtitleLabel?.backgroundColor = UIColor.clear
         subtitleLabel?.textColor = UIColor.lightText
-        subtitleLabel?.font = UIFont.systemFont(ofSize: 12)
+        subtitleLabel?.font = UIFont.systemFont(ofSize: 10)
         subtitleLabel?.text = subtitle
         subtitleLabel?.sizeToFit()
 
