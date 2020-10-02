@@ -10,4 +10,10 @@ import UIKit
 
 class MaskMojiCellCollectionViewCell: UICollectionViewCell {    
     @IBOutlet weak var maskMojiLabel: UILabel!
+    
+    override var isHighlighted: Bool{
+        didSet {
+            self.backgroundColor = isHighlighted ? UIColor.blue : UIColor.systemBackground
+        }
+    }
 }

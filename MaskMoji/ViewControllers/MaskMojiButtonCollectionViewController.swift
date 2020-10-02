@@ -9,8 +9,10 @@
 import UIKit
 import CoreBluetooth
 
-class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate {
     var peripheral : CBPeripheral? = nil
+    var subtitleLabel : UILabel? = nil
+    let emojiSize = CGFloat(65)
     
     static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","maskmoji"];
 
@@ -20,6 +22,9 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
         self.view.backgroundColor = UIColor.blue;
         self.title = NSLocalizedString("MaskMojis", tableName: "Standard", bundle: Bundle.main, value: "MaskMoji", comment: "Maskmoji title")
         
+        let title = self.title
+        let subtitle = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
+        self.navigationItem.titleView = setTitle(title: title!, subtitle: subtitle)
     }
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -27,13 +32,21 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return ViewController.emojis.count;
+        return MaskMojiButtonCollectionViewController.emojis.count;
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MaskMojiCell", for: indexPath) as? MaskMojiCellCollectionViewCell {
-            cell.maskMojiLabel.text = ViewController.emojis[indexPath.row];
-            cell.maskMojiLabel.font = UIFont.systemFont(ofSize: cell.bounds.height/2)
+            cell.maskMojiLabel.text = MaskMojiButtonCollectionViewController.emojis[indexPath.row];
+            if cell.maskMojiLabel.text?.count == 1 {
+                cell.maskMojiLabel.font = UIFont.systemFont(ofSize: emojiSize)
+            } else {
+                cell.maskMojiLabel.font = UIFont.systemFont(ofSize: UIFont.buttonFontSize)
+            }
+            cell.layer.borderColor = UIColor.darkGray.cgColor
+            cell.layer.borderWidth = 1
+            cell.layer.cornerRadius = 4
+            
             return cell;
         }
         return UICollectionViewCell();
@@ -54,11 +67,11 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
         guard let peripheral = self.peripheral else { return }
-        if ViewController.emojis.count <= indexPath.item { return }
-        let emoji = ViewController.emojis[indexPath.item]
+        if MaskMojiButtonCollectionViewController.emojis.count <= indexPath.item { return }
+        let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
         var fn : String
         if emoji.count == 1 {
-            let s = ViewController.emojis[indexPath.item].unicodeScalars.first
+            let s = MaskMojiButtonCollectionViewController.emojis[indexPath.item].unicodeScalars.first
             fn = String(format: "%lx", s!.value)
         } else {
             fn = emoji
@@ -74,6 +87,40 @@ class ViewController: UICollectionViewController, UICollectionViewDelegateFlowLa
     
     func peripheralChosen(_ peripheral: CBPeripheral?) {
         self.peripheral = peripheral
+        subtitleLabel?.text = peripheral?.name ?? peripheral?.identifier.uuidString ?? NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
+    }
+    
+    func setTitle(title:String, subtitle:String) -> UIView {
+        let titleLabel = UILabel(frame: CGRect(x: 0, y: -2, width: 0, height: 0))
+
+        titleLabel.backgroundColor = UIColor.clear
+        titleLabel.textColor = UIColor.gray
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 17)
+        titleLabel.text = title
+        titleLabel.sizeToFit()
+
+        subtitleLabel = UILabel(frame: CGRect(x: 0, y: 18, width: 0, height: 0))
+        subtitleLabel?.backgroundColor = UIColor.clear
+        subtitleLabel?.textColor = UIColor.lightText
+        subtitleLabel?.font = UIFont.systemFont(ofSize: 12)
+        subtitleLabel?.text = subtitle
+        subtitleLabel?.sizeToFit()
+
+        let titleView = UIView(frame: CGRect(x: 0, y: 0, width: max(titleLabel.frame.size.width, (subtitleLabel?.frame.size.width)!), height: 30))
+        titleView.addSubview(titleLabel)
+        titleView.addSubview(subtitleLabel!)
+
+        let widthDiff = subtitleLabel!.frame.size.width - titleLabel.frame.size.width
+
+        if widthDiff < 0 {
+            let newX = widthDiff / 2
+            subtitleLabel!.frame.origin.x = abs(newX)
+        } else {
+            let newX = widthDiff / 2
+            titleLabel.frame.origin.x = newX
+        }
+
+        return titleView
     }
 }
 
