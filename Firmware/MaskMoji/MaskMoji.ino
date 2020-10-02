@@ -92,11 +92,12 @@ void setup()
   initBLE();
 
   sleepTime = 1;
+  pinMode(35, INPUT);
 
    esp_pm_config_esp32_t config;
     config.max_freq_mhz= 80;
     config.min_freq_mhz = 10;
-    config.light_sleep_enable = false;
+    config.light_sleep_enable = true;
   esp_pm_configure(&config);
 }
 
@@ -170,6 +171,16 @@ void loop() {
     digitalWrite(BACKLIGHT, LOW);
     tft.enableSleep(true);
   }
+  if (sleepTime == 0 && !digitalRead(35)) {
+    sleepTime = millis() + 10000;
+    digitalWrite(BACKLIGHT, HIGH);
+    tft.enableSleep(false);
+    tft.setRotation(1);
+    tft.setCursor(10, tft.height()/2);
+    tft.fillScreen(0x03 << 11 | 0x03 << 5 | 0x3);
+    tft.setTextSize(2);
+    tft.print(apName);
+  }
 }
 
 //====================================================================================
@@ -203,6 +214,7 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
 
 void loadFile(const char *name)
 {
+  tft.setRotation(0);
   tft.fillScreen(0x03 << 11 | 0x03 << 5 | 0x3);
 
   // Time recorded for test purposes
@@ -227,6 +239,7 @@ void loadFile(const char *name)
   t = millis() - t;
 
   char buf[100];
+  tft.setTextSize(1);
   sprintf(buf, "%s %dx%d 1:%d %u ms result %d", name, w, h, scale, t, result);
   tft.setCursor(0, tft.height() - 8);
   tft.print(buf);
