@@ -66,6 +66,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
+        subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
         guard let peripheral = self.peripheral else { return }
         if (peripheral.state != .connected) {
             if (peripheral.state != .connecting) {
@@ -102,31 +103,35 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         let titleLabel = UILabel(frame: CGRect(x: 0, y: -2, width: 0, height: 0))
 
         titleLabel.backgroundColor = UIColor.clear
-        titleLabel.textColor = UIColor.gray
+        titleLabel.textColor = UIColor.label
         titleLabel.font = UIFont.boldSystemFont(ofSize: 17)
+        titleLabel.textAlignment = .center
         titleLabel.text = title
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.sizeToFit()
 
         subtitleLabel = UILabel(frame: CGRect(x: 0, y: 18, width: 0, height: 0))
         subtitleLabel?.backgroundColor = UIColor.clear
-        subtitleLabel?.textColor = UIColor.lightText
-        subtitleLabel?.font = UIFont.systemFont(ofSize: 10)
+        subtitleLabel?.textColor = UIColor.secondaryLabel
+        subtitleLabel?.font = UIFont.systemFont(ofSize: 12)
+        subtitleLabel?.textAlignment = .center
         subtitleLabel?.text = subtitle
+        subtitleLabel?.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel?.sizeToFit()
 
-        let titleView = UIView(frame: CGRect(x: 0, y: 0, width: max(titleLabel.frame.size.width, (subtitleLabel?.frame.size.width)!), height: 30))
+        let titleView = UIView(frame: CGRect(x: 0, y: 0, width: max(titleLabel.frame.size.width, subtitleLabel!.frame.size.width), height: 30))
         titleView.addSubview(titleLabel)
         titleView.addSubview(subtitleLabel!)
-
-        let widthDiff = subtitleLabel!.frame.size.width - titleLabel.frame.size.width
-
-        if widthDiff < 0 {
-            let newX = widthDiff / 2
-            subtitleLabel!.frame.origin.x = abs(newX)
-        } else {
-            let newX = widthDiff / 2
-            titleLabel.frame.origin.x = newX
-        }
+        
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: titleView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: titleView.trailingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: titleView.topAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel!.topAnchor),
+            subtitleLabel!.leadingAnchor.constraint(equalTo: titleView.leadingAnchor),
+            subtitleLabel!.trailingAnchor.constraint(equalTo: titleView.trailingAnchor),
+            subtitleLabel!.bottomAnchor.constraint(equalTo: titleView.bottomAnchor)
+        ])
 
         return titleView
     }
