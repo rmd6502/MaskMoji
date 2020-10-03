@@ -14,7 +14,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
     
-    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","maskmoji"];
+    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
