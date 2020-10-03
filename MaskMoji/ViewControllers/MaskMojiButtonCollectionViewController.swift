@@ -13,12 +13,22 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
+    let kLastConnectedDeviceNameKey = "kLastConnectedDeviceName"
+    var bluetoothDataSource : BluetoothDataSource? = nil
     
     static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        bluetoothDataSource = BluetoothDataSource()
+        if let lastConnected = UserDefaults.standard.string(forKey: kLastConnectedDeviceNameKey) {
+            bluetoothDataSource?.reconnectPeripheral(lastConnected, resultBlock: { [self] (success: Bool, peripheral: CBPeripheral) in
+                if success {
+                    peripheralChosen(peripheral)
+                }
+            })
+        }
         self.view.backgroundColor = UIColor.blue;
         self.title = NSLocalizedString("MaskMojis", tableName: "Standard", bundle: Bundle.main, value: "MaskMoji", comment: "Maskmoji title")
         
@@ -90,15 +100,25 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let dest = segue.destination as? BluetoothTableViewController {
             dest.delegate = self
+            dest.bluetoothDataSource = bluetoothDataSource
         }
     }
     
     func peripheralChosen(_ peripheral: CBPeripheral?) {
         self.peripheral = peripheral
-        peripheral?.delegate = self
-        subtitleLabel?.text = peripheral?.name ?? peripheral?.identifier.uuidString ?? NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
+        guard let peripheral = peripheral else {return}
+        peripheral.delegate = self
+        subtitleLabel?.text = peripheral.name ?? peripheral.identifier.uuidString
+        UserDefaults.standard.set(peripheral.identifier.uuidString, forKey: kLastConnectedDeviceNameKey)
     }
     
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            print("Failed to write to characteristic: ", error.localizedDescription)
+            return
+        }
+    }
+
     func setTitle(title:String, subtitle:String) -> UIView {
         let titleLabel = UILabel(frame: CGRect(x: 0, y: -2, width: 0, height: 0))
 
