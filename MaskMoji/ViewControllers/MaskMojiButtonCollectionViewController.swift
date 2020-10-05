@@ -76,8 +76,10 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
-        subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
-        guard let peripheral = self.peripheral else { return }
+        guard let peripheral = self.peripheral else {
+            subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
+            return
+        }
         if (peripheral.state != .connected) {
             if (peripheral.state != .connecting) {
                 self.peripheral = nil;
@@ -101,6 +103,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         if let dest = segue.destination as? BluetoothTableViewController {
             dest.delegate = self
             dest.bluetoothDataSource = bluetoothDataSource
+            // don't reconnect if the user goes to scan.
+            UserDefaults.standard.set(nil, forKey: kLastConnectedDeviceNameKey)
         }
     }
     

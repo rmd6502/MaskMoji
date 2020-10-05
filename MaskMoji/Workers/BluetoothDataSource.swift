@@ -105,7 +105,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        print("Failed to connected to ",peripheral.name ?? "unknown"," with error ", error?.localizedDescription ?? "unknown error")
+        print("Failed to connect to ",peripheral.name ?? "unknown"," with error ", error?.localizedDescription ?? "unknown error")
         guard let closure = closures[peripheral.identifier] else {
             return
         }
