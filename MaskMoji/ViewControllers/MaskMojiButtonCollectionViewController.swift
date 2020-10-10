@@ -6,17 +6,18 @@
 //  Copyright © 2020 Robert Diamond. All rights reserved.
 //
 
+import Foundation
 import UIKit
 import CoreBluetooth
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate {
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
     let kLastConnectedDeviceNameKey = "kLastConnectedDeviceName"
     var bluetoothDataSource : BluetoothDataSource? = nil
     
-    static let emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
+    static var emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +36,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         let title = self.title
         let subtitle = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
         self.navigationItem.titleView = setTitle(title: title!, subtitle: subtitle)
+        collectionView.dragInteractionEnabled = true
+        collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
     }
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -103,8 +107,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         if let dest = segue.destination as? BluetoothTableViewController {
             dest.delegate = self
             dest.bluetoothDataSource = bluetoothDataSource
-            // don't reconnect if the user goes to scan.
-            UserDefaults.standard.set(nil, forKey: kLastConnectedDeviceNameKey)
         }
     }
     
@@ -158,6 +160,47 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         ])
 
         return titleView
+    }
+    
+    // MARK: - UICollectionViewDragDelegate
+    
+    func collectionView(_ collectionView: UICollectionView,
+      itemsForBeginning session: UIDragSession,
+      at indexPath: IndexPath) -> [UIDragItem] {
+        let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
+        let provider = NSItemProvider(object: emoji as NSItemProviderWriting)
+        let dragItem = UIDragItem(itemProvider: provider)
+        return [ dragItem ]
+    }
+    
+    // MARK: - UICollectionViewDropDelegate
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        performDropWith coordinator: UICollectionViewDropCoordinator) {
+        guard let destinationIndexPath = coordinator.destinationIndexPath else {
+            return
+        }
+        coordinator.items.forEach { (dropItem) in
+            guard let dropIndexPath = dropItem.sourceIndexPath else { return }
+            let emoji = MaskMojiButtonCollectionViewController.emojis[dropIndexPath.item]
+            collectionView.performBatchUpdates {
+                MaskMojiButtonCollectionViewController.emojis.remove(at: dropIndexPath.item)
+                MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: destinationIndexPath.item)
+                collectionView.deleteItems(at: [dropIndexPath])
+                collectionView.insertItems(at: [destinationIndexPath])
+            } completion: { (_) in
+                coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
+            }
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        canHandle session: UIDropSession) -> Bool {
+        return true
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        return UICollectionViewDropProposal(operation: .move)
     }
 }
 
