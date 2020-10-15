@@ -15,15 +15,20 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
     let kLastConnectedDeviceNameKey = "kLastConnectedDeviceName"
+    let kEmojiCollectionKey = "kEmojiCollectionKey"
     var bluetoothDataSource : BluetoothDataSource? = nil
     
-    static var emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
+    static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        let defaults = UserDefaults.standard
+        if let savedEmojis = defaults.array(forKey: kEmojiCollectionKey) as? [String] {
+            MaskMojiButtonCollectionViewController.emojis = savedEmojis
+        }
         bluetoothDataSource = BluetoothDataSource()
-        if let lastConnected = UserDefaults.standard.string(forKey: kLastConnectedDeviceNameKey) {
+        if let lastConnected = defaults.string(forKey: kLastConnectedDeviceNameKey) {
             bluetoothDataSource?.reconnectPeripheral(lastConnected, resultBlock: { [self] (success: Bool, peripheral: CBPeripheral) in
                 if success {
                     peripheralChosen(peripheral)
@@ -80,6 +85,10 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
+        if indexPath.item == 0 {
+            handleAddEmoji()
+            return
+        }
         guard let peripheral = self.peripheral else {
             subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
             return
@@ -103,10 +112,16 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         peripheral.writeValue(fn.data(using: .utf8)!, for: (peripheral.services?.first?.characteristics?.first)!, type: .withResponse)
     }
     
+    func handleAddEmoji() {
+        performSegue(withIdentifier: "AddEmojis", sender: nil)
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let dest = segue.destination as? BluetoothTableViewController {
             dest.delegate = self
             dest.bluetoothDataSource = bluetoothDataSource
+        } else if let dest = segue.destination as? AddEmojisCollectionViewController {
+            dest.emojiList = MaskMojiButtonCollectionViewController.emojis
         }
     }
     
@@ -167,6 +182,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     func collectionView(_ collectionView: UICollectionView,
       itemsForBeginning session: UIDragSession,
       at indexPath: IndexPath) -> [UIDragItem] {
+        if indexPath.item == 0 { return [] }
         let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
         let provider = NSItemProvider(object: emoji as NSItemProviderWriting)
         let dragItem = UIDragItem(itemProvider: provider)
@@ -180,6 +196,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         guard let destinationIndexPath = coordinator.destinationIndexPath else {
             return
         }
+        if destinationIndexPath.item == 0 { return }
         coordinator.items.forEach { (dropItem) in
             guard let dropIndexPath = dropItem.sourceIndexPath else { return }
             let emoji = MaskMojiButtonCollectionViewController.emojis[dropIndexPath.item]
@@ -192,6 +209,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
                 coordinator.drop(dropItem.dragItem, toItemAt: destinationIndexPath)
             }
         }
+        UserDefaults.standard.set(MaskMojiButtonCollectionViewController.emojis, forKey: kEmojiCollectionKey)
     }
     
     func collectionView(_ collectionView: UICollectionView,

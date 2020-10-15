@@ -62,10 +62,65 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <segue destination="WJD-ER-5eT" kind="show" identifier="AddEmojis" id="pDC-3R-1Nf"/>
+                    </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1tk-2h-7fx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1275" y="52"/>
+        </scene>
+        <!--Add Emojis Collection View Controller-->
+        <scene sceneID="TC2-f7-Rcd">
+            <objects>
+                <collectionViewController modalTransitionStyle="crossDissolve" id="WJD-ER-5eT" customClass="AddEmojisCollectionViewController" customModule="MaskMoji" customModuleProvider="target" sceneMemberID="viewController">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="P52-dy-Of0">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" sectionInsetReference="layoutMargins" id="TWM-lS-KZO">
+                            <size key="itemSize" width="128" height="128"/>
+                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                        </collectionViewFlowLayout>
+                        <cells>
+                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="AllEmojiCell" id="C5b-S0-IIB" customClass="AllEmojisCollectionViewCell" customModule="MaskMoji" customModuleProvider="target">
+                                <rect key="frame" x="8" y="8" width="57.5" height="36.5"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="ZcB-Lq-Rs6">
+                                    <rect key="frame" x="0.0" y="0.0" width="57.5" height="36.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mum-zh-eUq">
+                                            <rect key="frame" x="8" y="8" width="41.5" height="20.5"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="mum-zh-eUq" firstAttribute="leading" secondItem="ZcB-Lq-Rs6" secondAttribute="leading" constant="8" id="AIl-Wx-hHv"/>
+                                        <constraint firstAttribute="trailing" secondItem="mum-zh-eUq" secondAttribute="trailing" constant="8" id="Lug-KW-gSn"/>
+                                        <constraint firstAttribute="bottom" secondItem="mum-zh-eUq" secondAttribute="bottom" constant="8" id="YhV-ku-ZE9"/>
+                                        <constraint firstItem="mum-zh-eUq" firstAttribute="top" secondItem="ZcB-Lq-Rs6" secondAttribute="top" constant="8" id="bD3-c4-tRq"/>
+                                    </constraints>
+                                </collectionViewCellContentView>
+                                <connections>
+                                    <outlet property="emojiLabel" destination="mum-zh-eUq" id="PYm-zN-ZiT"/>
+                                </connections>
+                            </collectionViewCell>
+                        </cells>
+                        <connections>
+                            <outlet property="dataSource" destination="WJD-ER-5eT" id="PSO-eU-aFv"/>
+                            <outlet property="delegate" destination="WJD-ER-5eT" id="14r-1A-3Ek"/>
+                        </connections>
+                    </collectionView>
+                    <navigationItem key="navigationItem" id="Q5S-Fl-EvF"/>
+                </collectionViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="foX-2i-WiF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2228.985507246377" y="805.58035714285711"/>
         </scene>
         <!--Bluetooth Table View Controller-->
         <scene sceneID="XPf-EK-HyC">
