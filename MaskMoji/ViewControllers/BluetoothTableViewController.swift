@@ -23,7 +23,6 @@ class BluetoothTableViewController: UITableViewController, BluetoothDataSourceDe
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        bluetoothDataSource = BluetoothDataSource()
         bluetoothDataSource?.delegate = self
     }
 
@@ -47,7 +46,7 @@ class BluetoothTableViewController: UITableViewController, BluetoothDataSourceDe
     // MARK: - Table View Delegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let peripheral = bluetoothDataSource?.peripherals[indexPath.row]
-        bluetoothDataSource?.connectToPeripheral(peripheral!, resultBlock: { (success : Bool) in
+        bluetoothDataSource?.connectToPeripheral(peripheral!, resultBlock: { (success : Bool, toPeripheral: CBPeripheral) in
             self.delegate?.peripheralChosen(peripheral)
             self.navigationController?.popViewController(animated: true)
         })

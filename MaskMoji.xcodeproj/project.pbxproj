@@ -14,9 +14,12 @@
 		83806566250DD1A0005906D1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83806565250DD1A0005906D1 /* Assets.xcassets */; };
 		83806569250DD1A0005906D1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 83806567250DD1A0005906D1 /* LaunchScreen.storyboard */; };
 		83806571250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */; };
+		838B6DAE25327BC4007A58E3 /* AddEmojisCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838B6DAD25327BC4007A58E3 /* AddEmojisCollectionViewController.swift */; };
+		838B6DB12533A4BC007A58E3 /* EmojiDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838B6DB02533A4BC007A58E3 /* EmojiDataSource.swift */; };
 		83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */; };
 		83A1FD23250EBCAC0063473C /* BluetoothDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */; };
 		83BD3774250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD3773250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift */; };
+		83F3A9672537F1100088D257 /* AllEmojisCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F3A9662537F10F0088D257 /* AllEmojisCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,9 +32,12 @@
 		83806568250DD1A0005906D1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8380656A250DD1A0005906D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskMojiCellCollectionViewCell.swift; sourceTree = "<group>"; };
+		838B6DAD25327BC4007A58E3 /* AddEmojisCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEmojisCollectionViewController.swift; sourceTree = "<group>"; };
+		838B6DB02533A4BC007A58E3 /* EmojiDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmojiDataSource.swift; sourceTree = "<group>"; };
 		83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTableViewController.swift; sourceTree = "<group>"; };
 		83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDataSource.swift; sourceTree = "<group>"; };
 		83BD3773250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothPeripheralTableViewCell.swift; sourceTree = "<group>"; };
+		83F3A9662537F10F0088D257 /* AllEmojisCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEmojisCollectionViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +88,7 @@
 			children = (
 				83806560250DD19D005906D1 /* MaskMojiButtonCollectionViewController.swift */,
 				83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */,
+				838B6DAD25327BC4007A58E3 /* AddEmojisCollectionViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -91,6 +98,7 @@
 			children = (
 				83806570250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift */,
 				83BD3773250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift */,
+				83F3A9662537F10F0088D257 /* AllEmojisCollectionViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -99,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */,
+				838B6DB02533A4BC007A58E3 /* EmojiDataSource.swift */,
 			);
 			path = Workers;
 			sourceTree = "<group>";
@@ -174,11 +183,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				838B6DB12533A4BC007A58E3 /* EmojiDataSource.swift in Sources */,
+				83F3A9672537F1100088D257 /* AllEmojisCollectionViewCell.swift in Sources */,
 				83806561250DD19D005906D1 /* MaskMojiButtonCollectionViewController.swift in Sources */,
 				83BD3774250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift in Sources */,
 				83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */,
 				83806571250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift in Sources */,
 				8380655D250DD19D005906D1 /* AppDelegate.swift in Sources */,
+				838B6DAE25327BC4007A58E3 /* AddEmojisCollectionViewController.swift in Sources */,
 				8380655F250DD19D005906D1 /* SceneDelegate.swift in Sources */,
 				83A1FD23250EBCAC0063473C /* BluetoothDataSource.swift in Sources */,
 			);

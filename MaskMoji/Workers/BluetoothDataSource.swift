@@ -23,7 +23,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     var centralManager : CBCentralManager!
     var isPoweredOn = false
     var peripherals = [CBPeripheral]()
-    var closures = [UUID : (Bool) -> Void]()
+    var closures = [UUID : (Bool, CBPeripheral) -> Void]()
     
     override init() {
         q = DispatchQueue(label: "Bluetooth")
@@ -33,14 +33,23 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     
     func startScan() {
         centralManager.scanForPeripherals(withServices: [CBUUID(string: BluetoothDataSource.serviceId)], options: .none)
-        //centralManager.scanForPeripherals(withServices: [CBUUID(string: BluetoothDataSource.serviceId)], options: .none)
     }
     
     func stopScan() {
         centralManager.stopScan()
     }
     
-    func connectToPeripheral(_ peripheral: CBPeripheral, resultBlock: @escaping (_ success: Bool) -> Void) {
+    func reconnectPeripheral(_ byUUID: String, resultBlock: @escaping (_ success: Bool, _ peripheral: CBPeripheral) -> Void) {
+        guard let uuid = UUID(uuidString: byUUID) else {return}
+        let known = centralManager.retrievePeripherals(withIdentifiers: [uuid])
+        if known.count > 0 {
+            connectToPeripheral(known.first!, resultBlock: resultBlock)
+        } else {
+            closures[uuid] = resultBlock
+        }
+    }
+    
+    func connectToPeripheral(_ peripheral: CBPeripheral, resultBlock: @escaping (_ success: Bool, _ peripheral: CBPeripheral) -> Void) {
         closures[peripheral.identifier] = resultBlock
         centralManager.connect(peripheral, options: .none)
     }
@@ -67,6 +76,9 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
             DispatchQueue.main.async {
                 self.delegate?.devicesFound(self.peripherals)
             }
+            if closures[peripheral.identifier] != nil {
+                centralManager.connect(peripheral, options: .none)
+            }
         }
     }
     
@@ -88,15 +100,16 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
         }
         closures[peripheral.identifier] = nil
         DispatchQueue.main.async {
-            closure(error == nil)
+            closure(error == nil, peripheral)
         }
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        print("Failed to connect to ",peripheral.name ?? "unknown"," with error ", error?.localizedDescription ?? "unknown error")
         guard let closure = closures[peripheral.identifier] else {
             return
         }
         closures[peripheral.identifier] = nil
-        closure(false)
+        closure(false, peripheral)
     }
 }
