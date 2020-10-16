@@ -10,7 +10,8 @@ import Foundation
 import UIKit
 import CoreBluetooth
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate {
+    
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
     let emojiSize = CGFloat(65)
@@ -18,7 +19,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     let kEmojiCollectionKey = "kEmojiCollectionKey"
     var bluetoothDataSource : BluetoothDataSource? = nil
     
-    static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji"];
+    static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -121,6 +122,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             dest.delegate = self
             dest.bluetoothDataSource = bluetoothDataSource
         } else if let dest = segue.destination as? AddEmojisCollectionViewController {
+            dest.delegate = self
             dest.emojiList = MaskMojiButtonCollectionViewController.emojis
         }
     }
@@ -220,5 +222,22 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
         return UICollectionViewDropProposal(operation: .move)
     }
+    
+    // MARK: - AddEmojisCollectionDelegate
+    
+    func addEmoji(_ emoji: String) {
+        MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: 1)
+        UserDefaults.standard.set(MaskMojiButtonCollectionViewController.emojis, forKey: kEmojiCollectionKey)
+        self.collectionView.reloadData()
+    }
+    
+    func removeEmoji(_ emoji: String) {
+        if let index = MaskMojiButtonCollectionViewController.emojis.firstIndex(of: emoji) {
+            MaskMojiButtonCollectionViewController.emojis.remove(at: index)
+            UserDefaults.standard.set(MaskMojiButtonCollectionViewController.emojis, forKey: kEmojiCollectionKey)
+            self.collectionView.reloadData()
+        }
+    }
+    
 }
 

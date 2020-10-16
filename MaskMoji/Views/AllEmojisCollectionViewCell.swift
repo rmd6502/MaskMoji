@@ -14,7 +14,7 @@ class AllEmojisCollectionViewCell: UICollectionViewCell {
     public override var isSelected: Bool {
         didSet {
             if (isSelected) {
-                self.contentView.backgroundColor = UIColor.tertiarySystemFill
+                self.contentView.backgroundColor = UIColor.systemBlue
             } else {
                 self.contentView.backgroundColor = UIColor.systemBackground
             }

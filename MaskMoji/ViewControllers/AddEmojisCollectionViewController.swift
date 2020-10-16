@@ -8,11 +8,17 @@
 
 import UIKit
 
+protocol AddEmojisCollectionDelegate {
+    func addEmoji(_ emoji : String)
+    func removeEmoji(_ emoji : String)
+}
+
 private let reuseIdentifier = "AllEmojiCell"
 
 class AddEmojisCollectionViewController: UICollectionViewController {
     let emojiDataSource = EmojiDataSource()
-    let emojiSize = CGFloat(30)
+    let emojiSize = CGFloat(35)
+    var delegate : AddEmojisCollectionDelegate?
     public var emojiList : [String]?
 
     override func viewDidLoad() {
@@ -55,7 +61,11 @@ class AddEmojisCollectionViewController: UICollectionViewController {
             realCell.layer.borderColor = UIColor.darkGray.cgColor
             realCell.layer.borderWidth = 1
             realCell.layer.cornerRadius = 4
-            realCell.isSelected = text != nil && self.emojiList?.contains(text!) ?? false
+            let selected = text != nil && self.emojiList?.contains(text!) ?? false
+            if selected {
+                realCell.isSelected = true
+                collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            }
         }
         
         return cell
@@ -75,33 +85,18 @@ class AddEmojisCollectionViewController: UICollectionViewController {
 
     // MARK: UICollectionViewDelegate
 
-    /*
-    // Uncomment this method to specify if the specified item should be highlighted during tracking
-    override func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
-        return true
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("selected allmoji at ",indexPath)
+        if let text = emojiDataSource.emojiForIndexPath(indexPath) {
+            delegate?.addEmoji(text)
+        }
     }
-    */
-
-    /*
-    // Uncomment this method to specify if the specified item should be selected
-    override func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    */
-
-    /*
-    // Uncomment these methods to specify if an action menu should be displayed for the specified item, and react to actions performed on the item
-    override func collectionView(_ collectionView: UICollectionView, shouldShowMenuForItemAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, canPerformAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
-        return false
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, performAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) {
     
+    override func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        print("deselected allmoji at ",indexPath)
+        if let text = emojiDataSource.emojiForIndexPath(indexPath) {
+            delegate?.removeEmoji(text)
+        }
     }
-    */
 
 }
