@@ -6,11 +6,12 @@
 //  Copyright © 2020 Robert Diamond. All rights reserved.
 //
 
+import Accelerate
+import CoreBluetooth
 import Foundation
 import UIKit
-import CoreBluetooth
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
@@ -21,6 +22,10 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -238,6 +243,51 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             self.collectionView.reloadData()
         }
     }
+    @IBAction func selectImage(_ sender: Any) {
+        print("select images...")
+        if !UIImagePickerController.isSourceTypeAvailable(.photoLibrary) { return }
+        let imagePicker = UIImagePickerController()
+        guard let mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) else { return }
+        imagePicker.mediaTypes = mediaTypes
+        imagePicker.delegate = self
+        present(imagePicker, animated: true, completion: nil)
+    }
     
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        print("info ",info)
+        guard let image = info[.originalImage] as? UIImage else { return }
+        guard var argb8888 = vImage_CGImageFormat(
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            colorSpace: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),
+                renderingIntent: .defaultIntent) else { return }
+        var vb = vImage_Buffer()
+        vImageBuffer_InitWithCGImage(&vb, &argb8888, nil, image.cgImage!, UInt32(kvImageNoFlags))
+
+        // find the best ratio to fit in the 240x135 display
+        var dataBuffer3 : UnsafeMutablePointer<Any>? = nil
+        if image.size.width > image.size.height {
+            dataBuffer3 = UnsafeMutablePointer<Any>.allocate(capacity: Int(image.size.width * image.size.height) * 4)
+            var vbr = vImage_Buffer(data: dataBuffer3!, height: vImagePixelCount(image.size.width), width: vImagePixelCount(image.size.height), rowBytes: Int(image.size.height) * 4)
+            var bgcolor888 : [UInt8] = [0,0,0]
+            vImageRotate_ARGB8888(&vb, &vbr, nil, Float.pi/2, &bgcolor888, vImage_Flags(kvImageHighQualityResampling | kvImageBackgroundColorFill))
+            vb.free()
+            vb = vbr
+        }
+        
+        let dataBuffer = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 4)
+        var scaledVb = vImage_Buffer(data: dataBuffer, height: 240, width: 135, rowBytes: 135*4)
+        vImageScale_ARGB8888(&vb, &scaledVb, nil, vImage_Flags(kvImageBackgroundColorFill | kvImageHighQualityResampling))
+        vb.free()
+        let dataBuffer2 = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 2)
+        var convertedVB = vImage_Buffer(data: dataBuffer2, height: 240, width: 135, rowBytes: 135*2)
+        vImageConvert_ARGB8888toRGB565(&scaledVb, &convertedVB, vImage_Flags(kvImageNoFlags))
+        scaledVb.free()
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        print("changed my mind about choosing a picture")
+    }
 }
 
