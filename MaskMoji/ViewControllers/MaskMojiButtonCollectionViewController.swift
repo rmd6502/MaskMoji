@@ -254,6 +254,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        // This is pretty gnarly code. Abandon all hope ye who enter here...
         print("info ",info)
         guard let image = info[.originalImage] as? UIImage else { return }
         guard var argb8888 = vImage_CGImageFormat(
@@ -265,25 +266,30 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         var vb = vImage_Buffer()
         vImageBuffer_InitWithCGImage(&vb, &argb8888, nil, image.cgImage!, UInt32(kvImageNoFlags))
 
-        // find the best ratio to fit in the 240x135 display
+        // find the best ratio to fit in the 240x135 display.
         var dataBuffer3 : UnsafeMutablePointer<Any>? = nil
         if image.size.width > image.size.height {
             dataBuffer3 = UnsafeMutablePointer<Any>.allocate(capacity: Int(image.size.width * image.size.height) * 4)
             var vbr = vImage_Buffer(data: dataBuffer3!, height: vImagePixelCount(image.size.width), width: vImagePixelCount(image.size.height), rowBytes: Int(image.size.height) * 4)
             var bgcolor888 : [UInt8] = [0,0,0]
             vImageRotate_ARGB8888(&vb, &vbr, nil, Float.pi/2, &bgcolor888, vImage_Flags(kvImageHighQualityResampling | kvImageBackgroundColorFill))
+            // Looks like this also frees the UnsafeMutable data buffer passed in.
             vb.free()
             vb = vbr
         }
         
+        // Scale it down to 240x135.
         let dataBuffer = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 4)
         var scaledVb = vImage_Buffer(data: dataBuffer, height: 240, width: 135, rowBytes: 135*4)
         vImageScale_ARGB8888(&vb, &scaledVb, nil, vImage_Flags(kvImageBackgroundColorFill | kvImageHighQualityResampling))
         vb.free()
+        // Convert to RGB565, which is the native format for the ESP32 display.
         let dataBuffer2 = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 2)
         var convertedVB = vImage_Buffer(data: dataBuffer2, height: 240, width: 135, rowBytes: 135*2)
         vImageConvert_ARGB8888toRGB565(&scaledVb, &convertedVB, vImage_Flags(kvImageNoFlags))
         scaledVb.free()
+        // Send it over the air to the ESP32.
+        // Clean up.
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
