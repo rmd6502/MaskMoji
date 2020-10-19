@@ -30,7 +30,8 @@
 #include <SPI.h>
 
 #define SERVICE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
-#define CHARACTERISTIC_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
+#define CHARACTERISTIC_EMOJI_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
+#define CHARACTERISTIC_IMAGE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0002"
 static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 
 #define TFT_CS         5
@@ -51,9 +52,15 @@ uint32_t sleepTime = 0;
 class Callbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
         std::string value = pCharacteristic->getValue();
-        std::string filename = "/" + value + ".jpg";
-        Serial.print("file "); Serial.println(value.c_str());
-        loadFile(filename.c_str());
+        std::string uuid = pCharacteristic->getUUID().toString();
+        if (uuid == CHARACTERISTIC_EMOJI_UUID) {
+          std::string filename = "/" + value + ".jpg";
+          Serial.print("file "); Serial.println(value.c_str());
+          loadFile(filename.c_str());
+        } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
+          Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
+          tft.drawRGBBitmap(0,0,(uint16_t *)value.data(),135,240);
+        }
     }
 };
 
@@ -120,7 +127,7 @@ void initBLE() {
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_UUID,
+                                         CHARACTERISTIC_EMOJI_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
