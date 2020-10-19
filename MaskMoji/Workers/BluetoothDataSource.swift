@@ -17,7 +17,8 @@ protocol BluetoothDataSourceDelegate {
 
 class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     static var serviceId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
-    static var characteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
+    static var emojiCharacteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
+    static var imageCharacteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0002"
     var q : DispatchQueue
     public var delegate : BluetoothDataSourceDelegate? = nil
     var centralManager : CBCentralManager!
@@ -89,7 +90,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else { return }
-        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.characteristicId)], for: (services.first(where: { (service : CBService) -> Bool in
+        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.emojiCharacteristicId)], for: (services.first(where: { (service : CBService) -> Bool in
             service.uuid.uuidString == BluetoothDataSource.serviceId
         }))!)
     }
