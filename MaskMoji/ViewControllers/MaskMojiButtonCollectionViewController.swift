@@ -20,6 +20,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     let kEmojiCollectionKey = "kEmojiCollectionKey"
     var bluetoothDataSource : BluetoothDataSource? = nil
     
+    // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
     static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
     override func viewDidLoad() {
@@ -181,6 +182,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     // MARK: - UICollectionViewDragDelegate
+    // TODO: We need to make it obvious you can drag the emojis around.
     
     func collectionView(_ collectionView: UICollectionView,
       itemsForBeginning session: UIDragSession,
@@ -251,6 +253,10 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         // This is pretty gnarly code. Abandon all hope ye who enter here...
+        // TODO: I chose to use vImage because it has the high quality resize option, but
+        // I wonder if I'm overcomplicating things here. I could use UIImage.resizableImage
+        // and get JPEG data from it. I tried using the Lanczos scaler, but for some reason the
+        // UIImage.CIImage returned nil?
         print("info ",info)
         guard let image = info[.originalImage] as? UIImage else { return }
         guard var argb8888 = vImage_CGImageFormat(
