@@ -46,6 +46,7 @@ static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 // Support function prototypes.
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap);
 void loadFile(const char *name);
+void displayJpeg(const uint8_t *jpegData, uint32_t dataSize);
 
 uint32_t sleepTime = 0;
 
@@ -59,7 +60,7 @@ class Callbacks : public BLECharacteristicCallbacks {
           loadFile(filename.c_str());
         } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
           Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
-          tft.drawRGBBitmap(0,0,(uint16_t *)value.data(),135,240);
+          displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
         }
     }
 };
@@ -248,6 +249,41 @@ void loadFile(const char *name)
   char buf[100];
   tft.setTextSize(1);
   sprintf(buf, "%s %dx%d 1:%d %u ms result %d", name, w, h, scale, t, result);
+  tft.setCursor(0, tft.height() - 8);
+  tft.print(buf);
+  Serial.println(buf);
+  delay(500);
+}
+
+void displayJpeg(const uint8_t *jpegData, uint32_t dataSize)
+{
+  tft.setRotation(0);
+  tft.fillScreen(0x03 << 11 | 0x03 << 5 | 0x3);
+
+  // Time recorded for test purposes
+  uint32_t t = millis();
+
+  // Get the width and height in pixels of the jpeg if you wish
+  uint16_t w = 0, h = 0, scale;
+  JRESULT result = TJpgDec.getJpgSize(&w, &h, jpegData, dataSize);
+  tft.setRotation(w > h ? 1 : 0);
+
+  for (scale = 1; scale <= 8; scale <<= 1) {
+    if (w <= tft.width() * scale && h <= tft.height() * scale) break;
+  }
+  TJpgDec.setJpgScale(scale);
+  uint16_t x = (tft.width() - w) >> 1;
+  uint16_t y = (tft.height() - h) >> 1;
+
+  // Draw the image, top left at 0,0
+  TJpgDec.drawJpg(x, y, jpegData, dataSize);
+
+  // How much time did rendering take
+  t = millis() - t;
+
+  char buf[100];
+  tft.setTextSize(1);
+  sprintf(buf, "bt buffer %dx%d 1:%d %u ms result %d", w, h, scale, t, result);
   tft.setCursor(0, tft.height() - 8);
   tft.print(buf);
   Serial.println(buf);
