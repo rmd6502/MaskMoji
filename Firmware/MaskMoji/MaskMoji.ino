@@ -30,8 +30,8 @@
 #include <SPI.h>
 
 #define SERVICE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
-#define CHARACTERISTIC_EMOJI_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
-#define CHARACTERISTIC_IMAGE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0002"
+#define CHARACTERISTIC_EMOJI_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0001"
+#define CHARACTERISTIC_IMAGE_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0002"
 static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 
 #define TFT_CS         5
@@ -54,6 +54,7 @@ class Callbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         std::string uuid = pCharacteristic->getUUID().toString();
+        Serial.print("characteristic uuid "); Serial.println(uuid.c_str());
         if (uuid == CHARACTERISTIC_EMOJI_UUID) {
           std::string filename = "/" + value + ".jpg";
           Serial.print("file "); Serial.println(value.c_str());
