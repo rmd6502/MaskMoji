@@ -20,7 +20,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     let kEmojiCollectionKey = "kEmojiCollectionKey"
     var bluetoothDataSource : BluetoothDataSource? = nil
     lazy var resizeFilter = CIFilter(name: "CILanczosScaleTransform")
-    var jpegDataToSend : Data?
     
     // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
     static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
@@ -114,7 +113,11 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         } else {
             fn = emoji
         }
-        peripheral.writeValue(fn.data(using: .utf8)!, for: (peripheral.services?.first?.characteristics?.first)!, type: .withResponse)
+        guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+            return item.uuid.uuidString == BluetoothDataSource.emojiCharacteristicId
+        }) else { return }
+
+        peripheral.writeValue(fn.data(using: .utf8)!, for: characteristic, type: .withResponse)
     }
     
     func handleAddEmoji() {
@@ -266,11 +269,19 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         resizeFilter?.setValue(CGFloat(1), forKey: kCIInputAspectRatioKey)
         guard let result = resizeFilter?.value(forKey: kCIOutputImageKey) as? CIImage else { return }
         let outputImage = UIImage(ciImage: result)
-        jpegDataToSend = outputImage.jpegData(compressionQuality: 75)
+        guard let jpegDataToSend = outputImage.jpegData(compressionQuality: 75) else { return }
+        guard let peripheral = peripheral else { return }
+        guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+            return item.uuid.uuidString == BluetoothDataSource.imageCharacteristicId
+        }) else { return }
+        print("sending \(jpegDataToSend.count) bytes")
+        peripheral.writeValue(jpegDataToSend, for: characteristic, type: .withResponse)
+        picker.dismiss(animated: true, completion: nil)
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         print("changed my mind about choosing a picture")
+        picker.dismiss(animated: true, completion: nil)
     }
 }
 

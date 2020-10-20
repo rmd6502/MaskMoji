@@ -127,12 +127,19 @@ void initBLE() {
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+  BLECharacteristic *pEmojiCharacteristic = pService->createCharacteristic(
                                          CHARACTERISTIC_EMOJI_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-  pCharacteristic->setCallbacks(new Callbacks());
+  pEmojiCharacteristic->setCallbacks(new Callbacks());
+
+  BLECharacteristic *pImageCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_IMAGE_UUID,
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pImageCharacteristic->setCallbacks(new Callbacks());
 
   pService->start();
 
@@ -255,6 +262,7 @@ void loadFile(const char *name)
   delay(500);
 }
 
+// kida copy-pasta, but tjpegdec uses different functions for size and decode.
 void displayJpeg(const uint8_t *jpegData, uint32_t dataSize)
 {
   tft.setRotation(0);
