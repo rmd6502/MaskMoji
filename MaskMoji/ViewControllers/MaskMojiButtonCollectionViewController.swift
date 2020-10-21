@@ -260,18 +260,41 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         print("info ",info)
-        guard var image = info[.originalImage] as? UIImage else { return }
+        print("info ",info)
+        guard let image = info[.originalImage] as? UIImage else { return }
+        guard var argb8888 = vImage_CGImageFormat(
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            colorSpace: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),
+                renderingIntent: .defaultIntent) else { return }
+        var vb = vImage_Buffer()
+        vImageBuffer_InitWithCGImage(&vb, &argb8888, nil, image.cgImage!, UInt32(kvImageNoFlags))
+
+        // find the best ratio to fit in the 240x135 display.
+        var dataBuffer3 : UnsafeMutablePointer<Any>? = nil
         if image.size.width > image.size.height {
-            image = UIImage(cgImage: image.cgImage!, scale: 1, orientation: .right)
+            dataBuffer3 = UnsafeMutablePointer<Any>.allocate(capacity: Int(image.size.width * image.size.height) * 4)
+            var vbr = vImage_Buffer(data: dataBuffer3!, height: vImagePixelCount(image.size.width), width: vImagePixelCount(image.size.height), rowBytes: Int(image.size.height) * 4)
+            var bgcolor888 : [UInt8] = [0,0,0]
+            vImageRotate_ARGB8888(&vb, &vbr, nil, Float.pi/2, &bgcolor888, vImage_Flags(kvImageHighQualityResampling | kvImageBackgroundColorFill))
+            // Looks like this also frees the UnsafeMutable data buffer passed in.
+            vb.free()
+            vb = vbr
         }
-        guard let cg = image.cgImage else { return }
-        let ci = CIImage(cgImage: cg)
-        resizeFilter?.setValue(ci, forKey: kCIInputImageKey)
-        resizeFilter?.setValue(min(CGFloat(240)/image.size.height, CGFloat(135)/image.size.width), forKey: kCIInputScaleKey)
-        resizeFilter?.setValue(CGFloat(1), forKey: kCIInputAspectRatioKey)
-        guard let result = resizeFilter?.value(forKey: kCIOutputImageKey) as? CIImage else { return }
-        let outputImage = UIImage(ciImage: result)
-        guard let jpegDataToSend = outputImage.jpegData(compressionQuality: 0.75) else { return }
+        
+        // Scale it down to 240x135.
+        let dataBuffer = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 4)
+        var scaledVb = vImage_Buffer(data: dataBuffer, height: 240, width: 135, rowBytes: 135*4)
+        vImageScale_ARGB8888(&vb, &scaledVb, nil, vImage_Flags(kvImageBackgroundColorFill | kvImageHighQualityResampling))
+        vb.free()
+        var error = vImage_Error()
+        // The scaledVb's buffer will be automatically freed when the CGImage is freed.
+        guard let convertedCGImage = vImageCreateCGImageFromBuffer(&scaledVb, &argb8888, nil, nil, vImage_Flags(kvImageHighQualityResampling | kvImagePrintDiagnosticsToConsole), &error) else { return }
+        let convertedUIImage = UIImage(cgImage: convertedCGImage.takeRetainedValue())
+        guard let jpegDataToSend = convertedUIImage.jpegData(compressionQuality: 0.75) else { return }
+        
+        // Send it over the air to the ESP32.
         guard let peripheral = peripheral else { return }
         guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
             return item.uuid.uuidString == BluetoothDataSource.imageCharacteristicId
