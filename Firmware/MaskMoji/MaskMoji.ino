@@ -128,19 +128,20 @@ void initBLE() {
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
+  Callbacks *callbacks = new Callbacks();
+
   BLECharacteristic *pEmojiCharacteristic = pService->createCharacteristic(
                                          CHARACTERISTIC_EMOJI_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
-
-  pEmojiCharacteristic->setCallbacks(new Callbacks());
 
   BLECharacteristic *pImageCharacteristic = pService->createCharacteristic(
                                          CHARACTERISTIC_IMAGE_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-  pImageCharacteristic->setCallbacks(new Callbacks());
+  pEmojiCharacteristic->setCallbacks(callbacks);
+  pImageCharacteristic->setCallbacks(callbacks);
 
   pService->start();
 

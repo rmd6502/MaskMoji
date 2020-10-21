@@ -90,7 +90,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else { return }
-        peripheral.discoverCharacteristics([CBUUID(string: BluetoothDataSource.emojiCharacteristicId)], for: (services.first(where: { (service : CBService) -> Bool in
+        peripheral.discoverCharacteristics([], for: (services.first(where: { (service : CBService) -> Bool in
             service.uuid.uuidString == BluetoothDataSource.serviceId
         }))!)
     }

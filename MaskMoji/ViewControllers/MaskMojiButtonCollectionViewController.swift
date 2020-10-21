@@ -146,6 +146,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         if let error = error {
             print("Failed to write to characteristic: ", error.localizedDescription)
             return
+        } else {
+            print("wrote to characteristic \(characteristic.uuid.uuidString)")
         }
     }
 
@@ -269,7 +271,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         resizeFilter?.setValue(CGFloat(1), forKey: kCIInputAspectRatioKey)
         guard let result = resizeFilter?.value(forKey: kCIOutputImageKey) as? CIImage else { return }
         let outputImage = UIImage(ciImage: result)
-        guard let jpegDataToSend = outputImage.jpegData(compressionQuality: 75) else { return }
+        guard let jpegDataToSend = outputImage.jpegData(compressionQuality: 0.75) else { return }
         guard let peripheral = peripheral else { return }
         guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
             return item.uuid.uuidString == BluetoothDataSource.imageCharacteristicId
