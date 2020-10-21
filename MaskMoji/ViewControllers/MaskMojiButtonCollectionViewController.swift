@@ -260,14 +260,19 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         print("info ",info)
-        print("info ",info)
-        guard let image = info[.originalImage] as? UIImage else { return }
+        guard let image = info[.originalImage] as? UIImage else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         guard var argb8888 = vImage_CGImageFormat(
             bitsPerComponent: 8,
             bitsPerPixel: 32,
             colorSpace: CGColorSpaceCreateDeviceRGB(),
             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),
-                renderingIntent: .defaultIntent) else { return }
+                renderingIntent: .defaultIntent) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         var vb = vImage_Buffer()
         vImageBuffer_InitWithCGImage(&vb, &argb8888, nil, image.cgImage!, UInt32(kvImageNoFlags))
 
@@ -290,15 +295,27 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         vb.free()
         var error = vImage_Error()
         // The scaledVb's buffer will be automatically freed when the CGImage is freed.
-        guard let convertedCGImage = vImageCreateCGImageFromBuffer(&scaledVb, &argb8888, nil, nil, vImage_Flags(kvImageHighQualityResampling | kvImagePrintDiagnosticsToConsole), &error) else { return }
+        guard let convertedCGImage = vImageCreateCGImageFromBuffer(&scaledVb, &argb8888, nil, nil, vImage_Flags(kvImageHighQualityResampling | kvImagePrintDiagnosticsToConsole), &error) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         let convertedUIImage = UIImage(cgImage: convertedCGImage.takeRetainedValue())
-        guard let jpegDataToSend = convertedUIImage.jpegData(compressionQuality: 0.75) else { return }
+        guard let jpegDataToSend = convertedUIImage.jpegData(compressionQuality: 0.75) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         
         // Send it over the air to the ESP32.
-        guard let peripheral = peripheral else { return }
+        guard let peripheral = peripheral else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
             return item.uuid.uuidString == BluetoothDataSource.imageCharacteristicId
-        }) else { return }
+        }) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
         print("sending \(jpegDataToSend.count) bytes")
         peripheral.writeValue(jpegDataToSend, for: characteristic, type: .withResponse)
         picker.dismiss(animated: true, completion: nil)
