@@ -51,15 +51,24 @@ void displayJpeg(const uint8_t *jpegData, uint32_t dataSize);
 uint32_t sleepTime = 0;
 
 class Callbacks : public BLECharacteristicCallbacks {
+  // This is a hack since I don't fully understand the BLE library.
+  // I noticed that if I sent an image from the phone, I'd get the callback from the other
+  // characteristic also. So if I get an image, ignore the next emoji message.
+  bool gotImage;
     void onWrite(BLECharacteristic *pCharacteristic) {
         std::string value = pCharacteristic->getValue();
         std::string uuid = pCharacteristic->getUUID().toString();
         Serial.print("characteristic uuid "); Serial.println(uuid.c_str());
         if (uuid == CHARACTERISTIC_EMOJI_UUID) {
+          if (gotImage) {
+            gotImage = false;
+            return;
+          }
           std::string filename = "/" + value + ".jpg";
           Serial.print("file "); Serial.println(value.c_str());
           loadFile(filename.c_str());
         } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
+          gotImage = true;
           Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
           displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
         }
@@ -130,18 +139,19 @@ void initBLE() {
 
   Callbacks *callbacks = new Callbacks();
 
-  BLECharacteristic *pEmojiCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_EMOJI_UUID,
-                                         BLECharacteristic::PROPERTY_WRITE
-                                       );
-
   BLECharacteristic *pImageCharacteristic = pService->createCharacteristic(
                                          CHARACTERISTIC_IMAGE_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-  pEmojiCharacteristic->setCallbacks(callbacks);
   pImageCharacteristic->setCallbacks(callbacks);
+
+  BLECharacteristic *pEmojiCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_EMOJI_UUID,
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pEmojiCharacteristic->setCallbacks(callbacks);
 
   pService->start();
 
