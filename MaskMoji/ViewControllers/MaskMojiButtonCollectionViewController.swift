@@ -6,11 +6,12 @@
 //  Copyright © 2020 Robert Diamond. All rights reserved.
 //
 
+import Accelerate
+import CoreBluetooth
 import Foundation
 import UIKit
-import CoreBluetooth
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
@@ -18,7 +19,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     let kLastConnectedDeviceNameKey = "kLastConnectedDeviceName"
     let kEmojiCollectionKey = "kEmojiCollectionKey"
     var bluetoothDataSource : BluetoothDataSource? = nil
+    lazy var resizeFilter = CIFilter(name: "CILanczosScaleTransform")
     
+    // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
     static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
     override func viewDidLoad() {
@@ -110,7 +113,11 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         } else {
             fn = emoji
         }
-        peripheral.writeValue(fn.data(using: .utf8)!, for: (peripheral.services?.first?.characteristics?.first)!, type: .withResponse)
+        guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+            return item.uuid.uuidString == BluetoothDataSource.emojiCharacteristicId
+        }) else { return }
+
+        peripheral.writeValue(fn.data(using: .utf8)!, for: characteristic, type: .withResponse)
     }
     
     func handleAddEmoji() {
@@ -139,6 +146,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         if let error = error {
             print("Failed to write to characteristic: ", error.localizedDescription)
             return
+        } else {
+            print("wrote to characteristic \(characteristic.uuid.uuidString)")
         }
     }
 
@@ -180,6 +189,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     // MARK: - UICollectionViewDragDelegate
+    // TODO: We need to make it obvious you can drag the emojis around.
     
     func collectionView(_ collectionView: UICollectionView,
       itemsForBeginning session: UIDragSession,
@@ -238,6 +248,82 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             self.collectionView.reloadData()
         }
     }
+    @IBAction func selectImage(_ sender: Any) {
+        print("select images...")
+        if !UIImagePickerController.isSourceTypeAvailable(.photoLibrary) { return }
+        let imagePicker = UIImagePickerController()
+        guard let mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) else { return }
+        imagePicker.mediaTypes = mediaTypes
+        imagePicker.delegate = self
+        present(imagePicker, animated: true, completion: nil)
+    }
     
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        print("info ",info)
+        guard let image = info[.originalImage] as? UIImage else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        guard var argb8888 = vImage_CGImageFormat(
+            bitsPerComponent: 8,
+            bitsPerPixel: 32,
+            colorSpace: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.first.rawValue),
+                renderingIntent: .defaultIntent) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        var vb = vImage_Buffer()
+        vImageBuffer_InitWithCGImage(&vb, &argb8888, nil, image.cgImage!, UInt32(kvImageNoFlags))
+
+        // find the best ratio to fit in the 240x135 display.
+        var dataBuffer3 : UnsafeMutablePointer<Any>? = nil
+        if image.size.width > image.size.height {
+            dataBuffer3 = UnsafeMutablePointer<Any>.allocate(capacity: Int(image.size.width * image.size.height) * 4)
+            var vbr = vImage_Buffer(data: dataBuffer3!, height: vImagePixelCount(image.size.width), width: vImagePixelCount(image.size.height), rowBytes: Int(image.size.height) * 4)
+            var bgcolor888 : [UInt8] = [0,0,0]
+            vImageRotate_ARGB8888(&vb, &vbr, nil, Float.pi/2, &bgcolor888, vImage_Flags(kvImageHighQualityResampling | kvImageBackgroundColorFill))
+            // Looks like this also frees the UnsafeMutable data buffer passed in.
+            vb.free()
+            vb = vbr
+        }
+        
+        // Scale it down to 240x135.
+        let dataBuffer = UnsafeMutablePointer<Any>.allocate(capacity: 135 * 240 * 4)
+        var scaledVb = vImage_Buffer(data: dataBuffer, height: 240, width: 135, rowBytes: 135*4)
+        vImageScale_ARGB8888(&vb, &scaledVb, nil, vImage_Flags(kvImageBackgroundColorFill | kvImageHighQualityResampling))
+        vb.free()
+        var error = vImage_Error()
+        // The scaledVb's buffer will be automatically freed when the CGImage is freed.
+        guard let convertedCGImage = vImageCreateCGImageFromBuffer(&scaledVb, &argb8888, nil, nil, vImage_Flags(kvImageHighQualityResampling | kvImagePrintDiagnosticsToConsole), &error) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        let convertedUIImage = UIImage(cgImage: convertedCGImage.takeRetainedValue())
+        guard let jpegDataToSend = convertedUIImage.jpegData(compressionQuality: 0.75) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        
+        // Send it over the air to the ESP32.
+        guard let peripheral = peripheral else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+            return item.uuid.uuidString == BluetoothDataSource.imageCharacteristicId
+        }) else {
+            picker.dismiss(animated: true, completion: nil)
+            return
+        }
+        print("sending \(jpegDataToSend.count) bytes")
+        peripheral.writeValue(jpegDataToSend, for: characteristic, type: .withResponse)
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        print("changed my mind about choosing a picture")
+        picker.dismiss(animated: true, completion: nil)
+    }
 }
 

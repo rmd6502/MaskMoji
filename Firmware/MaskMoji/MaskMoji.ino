@@ -30,7 +30,8 @@
 #include <SPI.h>
 
 #define SERVICE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
-#define CHARACTERISTIC_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
+#define CHARACTERISTIC_EMOJI_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0001"
+#define CHARACTERISTIC_IMAGE_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0002"
 static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 
 #define TFT_CS         5
@@ -45,15 +46,32 @@ static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 // Support function prototypes.
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap);
 void loadFile(const char *name);
+void displayJpeg(const uint8_t *jpegData, uint32_t dataSize);
 
 uint32_t sleepTime = 0;
 
 class Callbacks : public BLECharacteristicCallbacks {
+  // This is a hack since I don't fully understand the BLE library.
+  // I noticed that if I sent an image from the phone, I'd get the callback from the other
+  // characteristic also. So if I get an image, ignore the next emoji message.
+  bool gotImage;
     void onWrite(BLECharacteristic *pCharacteristic) {
         std::string value = pCharacteristic->getValue();
-        std::string filename = "/" + value + ".jpg";
-        Serial.print("file "); Serial.println(value.c_str());
-        loadFile(filename.c_str());
+        std::string uuid = pCharacteristic->getUUID().toString();
+        Serial.print("characteristic uuid "); Serial.println(uuid.c_str());
+        if (uuid == CHARACTERISTIC_EMOJI_UUID) {
+          if (gotImage) {
+            gotImage = false;
+            return;
+          }
+          std::string filename = "/" + value + ".jpg";
+          Serial.print("file "); Serial.println(value.c_str());
+          loadFile(filename.c_str());
+        } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
+          gotImage = true;
+          Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
+          displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
+        }
     }
 };
 
@@ -119,12 +137,21 @@ void initBLE() {
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
-  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
-                                         CHARACTERISTIC_UUID,
+  Callbacks *callbacks = new Callbacks();
+
+  BLECharacteristic *pImageCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_IMAGE_UUID,
                                          BLECharacteristic::PROPERTY_WRITE
                                        );
 
-  pCharacteristic->setCallbacks(new Callbacks());
+  pImageCharacteristic->setCallbacks(callbacks);
+
+  BLECharacteristic *pEmojiCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_EMOJI_UUID,
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pEmojiCharacteristic->setCallbacks(callbacks);
 
   pService->start();
 
@@ -241,6 +268,42 @@ void loadFile(const char *name)
   char buf[100];
   tft.setTextSize(1);
   sprintf(buf, "%s %dx%d 1:%d %u ms result %d", name, w, h, scale, t, result);
+  tft.setCursor(0, tft.height() - 8);
+  tft.print(buf);
+  Serial.println(buf);
+  delay(500);
+}
+
+// kida copy-pasta, but tjpegdec uses different functions for size and decode.
+void displayJpeg(const uint8_t *jpegData, uint32_t dataSize)
+{
+  tft.setRotation(0);
+  tft.fillScreen(0x03 << 11 | 0x03 << 5 | 0x3);
+
+  // Time recorded for test purposes
+  uint32_t t = millis();
+
+  // Get the width and height in pixels of the jpeg if you wish
+  uint16_t w = 0, h = 0, scale;
+  JRESULT result = TJpgDec.getJpgSize(&w, &h, jpegData, dataSize);
+  tft.setRotation(w > h ? 1 : 0);
+
+  for (scale = 1; scale <= 8; scale <<= 1) {
+    if (w <= tft.width() * scale && h <= tft.height() * scale) break;
+  }
+  TJpgDec.setJpgScale(scale);
+  uint16_t x = (tft.width() - w) >> 1;
+  uint16_t y = (tft.height() - h) >> 1;
+
+  // Draw the image, top left at 0,0
+  TJpgDec.drawJpg(x, y, jpegData, dataSize);
+
+  // How much time did rendering take
+  t = millis() - t;
+
+  char buf[100];
+  tft.setTextSize(1);
+  sprintf(buf, "bt buffer %dx%d 1:%d %u ms result %d", w, h, scale, t, result);
   tft.setCursor(0, tft.height() - 8);
   tft.print(buf);
   Serial.println(buf);
