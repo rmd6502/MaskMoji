@@ -22,6 +22,8 @@ Open the Arduino IDE, and install the plugins above if you haven't already. Go t
 
 Go to Tools->board and select ESP32->ESP32 Dev Board. Go to Tools->Partition Scheme and select "No OTA (1MB App/3MB SPIFFS)". Don't select the 3MB FAT option, that won't work.
 
+You'll need to thin out the data directory to make it fit in 3MB. If you have the 16MB version of the TTGO and are feeling brave, you can modify {ARDUINO_ROOT}/packages/esp32/hardware/esp32/1.0.4/boards.txt and find the 7MB SPIFFS option and move it to the description for the ESP32 dev board.
+
 Open the Maskmoji firmware at (unpack directory)/Firmware/MaskMoji/MaskMoji.ino . Click the check mark icon at the top left to build and make sure it succeeds.
 
 Plug in your board. Go to Tools->Port and select the COM or /dev/tty that corresponds to your board.
