@@ -64,7 +64,10 @@ class Callbacks : public BLECharacteristicCallbacks {
         Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
         displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
       } else if (uuid == CHARACTERISTIC_DURATION_UUID) {
-        display_duration_ms = strtoul(value.c_str(), nullptr, 10);
+        uint32_t newDuration = strtoul(value.c_str(), nullptr, 10);
+        if (newDuration >= 500) {
+          display_duration_ms = newDuration;
+        }
       }
   }
 
