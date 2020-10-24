@@ -47,35 +47,35 @@ class Callbacks : public BLECharacteristicCallbacks {
   // I noticed that if I sent an image from the phone, I'd get the callback from the other
   // characteristic also. So if I get an image, ignore the next emoji message.
   bool gotImage;
-    void onWrite(BLECharacteristic *pCharacteristic) {
-        std::string value = pCharacteristic->getValue();
-        std::string uuid = pCharacteristic->getUUID().toString();
-        Serial.print("characteristic uuid "); Serial.println(uuid.c_str());
-        if (uuid == CHARACTERISTIC_EMOJI_UUID) {
-          if (gotImage) {
-            gotImage = false;
-            return;
-          }
-          std::string filename = "/" + value + ".jpg";
-          Serial.print("file "); Serial.println(value.c_str());
-          loadFile(filename.c_str());
-        } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
-          gotImage = true;
-          Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
-          displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
-        } else if (uuid == CHARACTERISTIC_DURATION_UUID) {
-          display_duration_ms = strtoul(value.c_str(), nullptr, 10);
-        }
-    }
-
-    void onRead(BLECharacteristic *pCharacteristic) {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string value = pCharacteristic->getValue();
       std::string uuid = pCharacteristic->getUUID().toString();
-      if (uuid == CHARACTERISTIC_DURATION_UUID) {
-        std::stringstream buf;
-        buf << display_duration_ms;
-        pCharacteristic->setValue(buf.str());
+      Serial.print("characteristic uuid "); Serial.println(uuid.c_str());
+      if (uuid == CHARACTERISTIC_EMOJI_UUID) {
+        if (gotImage) {
+          gotImage = false;
+          return;
+        }
+        std::string filename = "/" + value + ".jpg";
+        Serial.print("file "); Serial.println(value.c_str());
+        loadFile(filename.c_str());
+      } else if (uuid == CHARACTERISTIC_IMAGE_UUID) {
+        gotImage = true;
+        Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
+        displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
+      } else if (uuid == CHARACTERISTIC_DURATION_UUID) {
+        display_duration_ms = strtoul(value.c_str(), nullptr, 10);
       }
+  }
+
+  void onRead(BLECharacteristic *pCharacteristic) {
+    std::string uuid = pCharacteristic->getUUID().toString();
+    if (uuid == CHARACTERISTIC_DURATION_UUID) {
+      std::stringstream buf;
+      buf << display_duration_ms;
+      pCharacteristic->setValue(buf.str());
     }
+  }
 };
 
 //====================================================================================
@@ -115,10 +115,10 @@ void setup()
   sleepTime = 1;
   pinMode(35, INPUT);
 
-   esp_pm_config_esp32_t config;
-    config.max_freq_mhz= 80;
-    config.min_freq_mhz = 10;
-    config.light_sleep_enable = true;
+  esp_pm_config_esp32_t config;
+  config.max_freq_mhz= 80;
+  config.min_freq_mhz = 10;
+  config.light_sleep_enable = true;
   esp_pm_configure(&config);
 }
 
@@ -173,34 +173,6 @@ void initBLE() {
   BLEDevice::startAdvertising();
 }
 
-//====================================================================================
-//                                    Loop
-//====================================================================================
-//#if defined(ESP32)
-//void loop()
-//{
-//  File root = SPIFFS.open("/");
-//  while (File file = root.openNextFile()) {
-//    String strname = file.name();
-//    // If it is not a directory and filename ends in .jpg then load it
-//    if (!file.isDirectory() && strname.endsWith(".jpg")) {
-//      loadFile(strname.c_str());
-//    }
-//  }
-//}
-//#else   // ESP8266 has different SPIFFS methods
-//void loop()
-//{
-//  fs::Dir directory = SPIFFS.openDir("/");
-//  while (directory.next()) {
-//    String strname = directory.fileName();
-//    // If filename ends in .jpg then load it
-//    if (strname.endsWith(".jpg")) {
-//      loadFile(strname.c_str());
-//    }
-//  }
-//}
-//#endif
 void loop() {
   if (sleepTime > 0 && millis() >= sleepTime) {
     Serial.println("back to sleep");
