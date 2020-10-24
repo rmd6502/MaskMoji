@@ -34,14 +34,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             MaskMojiButtonCollectionViewController.emojis = savedEmojis
         }
         bluetoothDataSource = BluetoothDataSource()
-        if let lastConnected = defaults.string(forKey: kLastConnectedDeviceNameKey) {
-            bluetoothDataSource?.reconnectPeripheral(lastConnected, resultBlock: { [self] (success: Bool, peripheral: CBPeripheral) in
-                if success {
-                    peripheralChosen(peripheral)
-                }
-            })
-        }
-        self.view.backgroundColor = UIColor.blue;
+        self.chooseLastConnectedPeripheral()
+        self.view.backgroundColor = UIColor.blue
         self.title = NSLocalizedString("MaskMojis", tableName: "Standard", bundle: Bundle.main, value: "MaskMoji", comment: "Maskmoji title")
         
         let title = self.title
@@ -52,6 +46,17 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         collectionView.dropDelegate = self
     }
 
+    func chooseLastConnectedPeripheral() {
+        let defaults = UserDefaults.standard
+        if let lastConnected = defaults.string(forKey: kLastConnectedDeviceNameKey) {
+            bluetoothDataSource?.reconnectPeripheral(lastConnected, resultBlock: { [self] (success: Bool, peripheral: CBPeripheral) in
+                if success {
+                    peripheralChosen(peripheral)
+                }
+            })
+        }
+    }
+    
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1;
     }
@@ -96,12 +101,13 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             return
         }
         guard let peripheral = self.peripheral else {
+            self.chooseLastConnectedPeripheral()
             subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
             return
         }
         if (peripheral.state != .connected) {
             if (peripheral.state != .connecting) {
-                self.peripheral = nil;
+                self.chooseLastConnectedPeripheral()
                 subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
             }
             return
