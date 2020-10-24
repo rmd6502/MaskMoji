@@ -1,20 +1,9 @@
-
-// Example for library:
-// https://github.com/Bodmer/TJpg_Decoder
-
-// This example is for an ESP8266 or ESP32, it renders all Jpeg files
-// found in SPIFFS. The test images are in the sketch "data" folder
-// (press Ctrl+K to see it). You can add more images of your own to
-// the Data folder.
-
-// You must upload the images to SPIFFS using the ESP8266 or ESP32
-// Arduino IDE Sketch Data Upload menu option.
-
 // Include the jpeg decoder library
 #include <TJpg_Decoder.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <esp_pm.h>
+#include <sstream>
 
 // Bluetooth
 #include <BLEDevice.h>
@@ -82,9 +71,9 @@ class Callbacks : public BLECharacteristicCallbacks {
     void onRead(BLECharacteristic *pCharacteristic) {
       std::string uuid = pCharacteristic->getUUID().toString();
       if (uuid == CHARACTERISTIC_DURATION_UUID) {
-        char buf[20];
-        snprintf(buf, sizeof(buf), "%lu", display_duration_ms);
-        pCharacteristic->setValue(buf);
+        std::stringstream buf;
+        buf << display_duration_ms;
+        pCharacteristic->setValue(buf.str());
       }
     }
 };
