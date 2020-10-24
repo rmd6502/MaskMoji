@@ -32,15 +32,18 @@
 #define SERVICE_UUID "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
 #define CHARACTERISTIC_EMOJI_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0001"
 #define CHARACTERISTIC_IMAGE_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0002"
+#define CHARACTERISTIC_DURATION_UUID "bc0dafb6-3ee7-4d77-9012-fac1da5a0003"
 static char apName[] = "MyMaskMoji-xxxxxxxxxxxx";
 
 #define TFT_CS         5
-  #define TFT_RST        23
-  #define TFT_DC         16
-  #define TFT_MOSI 19
-  #define TFT_SCLK 18
-  #define BACKLIGHT 4
-  Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+#define TFT_RST        23
+#define TFT_DC         16
+#define TFT_MOSI 19
+#define TFT_SCLK 18
+#define BACKLIGHT 4
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+static uint32_t display_duration_ms = 10000;
 
 
 // Support function prototypes.
@@ -71,7 +74,18 @@ class Callbacks : public BLECharacteristicCallbacks {
           gotImage = true;
           Serial.print("received "); Serial.print(value.size()); Serial.println(" bytes of image data");
           displayJpeg((const uint8_t *)value.data(),(uint32_t)value.size());
+        } else if (uuid == CHARACTERISTIC_DURATION_UUID) {
+          display_duration_ms = strtoul(value.c_str(), nullptr, 10);
         }
+    }
+
+    void onRead(BLECharacteristic *pCharacteristic) {
+      std::string uuid = pCharacteristic->getUUID().toString();
+      if (uuid == CHARACTERISTIC_DURATION_UUID) {
+        char buf[20];
+        snprintf(buf, sizeof(buf), "%lu", display_duration_ms);
+        pCharacteristic->setValue(buf);
+      }
     }
 };
 
@@ -153,6 +167,13 @@ void initBLE() {
 
   pEmojiCharacteristic->setCallbacks(callbacks);
 
+  BLECharacteristic *pDurationCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_DURATION_UUID,
+                                         BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ
+                                       );
+
+  pDurationCharacteristic->setCallbacks(callbacks);
+
   pService->start();
 
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
@@ -199,7 +220,7 @@ void loop() {
     tft.enableSleep(true);
   }
   if (sleepTime == 0 && !digitalRead(35)) {
-    sleepTime = millis() + 10000;
+    sleepTime = millis() + display_duration_ms;
     digitalWrite(BACKLIGHT, HIGH);
     tft.enableSleep(false);
     tft.setRotation(1);
@@ -221,7 +242,7 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
   // Stop further decoding as image is running off bottom of screen
   if ( y >= tft.height() ) return 0;
 
-  sleepTime = millis() + 10000;
+  sleepTime = millis() + display_duration_ms;
   digitalWrite(BACKLIGHT, HIGH);
   tft.enableSleep(false);
 
