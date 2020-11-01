@@ -343,14 +343,15 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         settingsView.view.alpha = 0.8
         settingsView.delegate = self
         coveringView.frame = self.view.bounds
-        coveringView.alpha = 0.25
+        coveringView.alpha = 0
         coveringView.backgroundColor = UIColor.black
         self.view.addSubview(coveringView)
         self.view.addSubview(settingsView.view)
         settingsView.didMove(toParent: self)
-        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
-            self.settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height - self.settingsView.view.bounds.height, width: self.view.bounds.width, height: self.settingsView.view.bounds.height)
-            self.settingsView.view.alpha = 1.0
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: { [self] in
+            settingsView.view.frame = CGRect(x: 0, y: view.bounds.height - settingsView.view.bounds.height, width: view.bounds.width, height: settingsView.view.bounds.height)
+            settingsView.view.alpha = 1.0
+            coveringView.alpha = 0.25
         })
     }
     
@@ -363,7 +364,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             if (finished) {
                 coveringView.removeFromSuperview()
                 settingsView.view.removeFromSuperview()
-                settingsView.didMove(toParent: self)
+                settingsView.didMove(toParent: nil)
             }
         }
     }
@@ -374,7 +375,24 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     func setDisplayDuration(_ duration: TimeInterval) {
-        
+        dismissSettings(self)
+        let alert = UIAlertController(title: "Enter display duration", message: "Enter the display duration in seconds (decimals okay)", preferredStyle: .alert)
+        alert.addTextField(configurationHandler: nil)
+        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: { [self] (action : UIAlertAction) in
+            print("User selected \(String(describing: alert.textFields![0].text))")
+            guard let textField = alert.textFields?[0].text else { return }
+            guard let peripheral = peripheral else { return }
+            guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+                return item.uuid.uuidString == BluetoothDataSource.durationCharacteristicId
+            }) else { return }
+
+            peripheral.writeValue(textField.data(using: .utf8)!, for: characteristic, type: .withResponse)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action : UIAlertAction) in
+            print("User cancelled")
+            alert.dismiss(animated: false, completion: nil)
+        }))
+        self.present(alert, animated: false, completion: nil)
     }
     
 }

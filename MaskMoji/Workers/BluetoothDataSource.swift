@@ -19,6 +19,7 @@ class BluetoothDataSource: NSObject, CBCentralManagerDelegate, CBPeripheralDeleg
     static var serviceId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5ADE15"
     static var emojiCharacteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0001"
     static var imageCharacteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0002"
+    static var durationCharacteristicId = "BC0DAFB6-3EE7-4D77-9012-FAC1DA5A0003"
     var q : DispatchQueue
     public var delegate : BluetoothDataSourceDelegate? = nil
     var centralManager : CBCentralManager!

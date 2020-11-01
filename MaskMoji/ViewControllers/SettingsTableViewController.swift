@@ -35,6 +35,7 @@ class SettingsTableViewController: UITableViewController {
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: kSettingsCellIdentifier)
         
         self.tableView.backgroundColor = UIColor.secondarySystemBackground
+        self.tableView.separatorStyle = .none
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
