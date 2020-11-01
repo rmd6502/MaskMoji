@@ -380,13 +380,15 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         alert.addTextField(configurationHandler: nil)
         alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: { [self] (action : UIAlertAction) in
             guard let textField = alert.textFields?[0].text else { return }
-            print("User selected \(textField)")
+            let writeDuration = Int((Double(textField) ?? 0) * 1000)
+            let stringDuration = String(writeDuration)
+            print("User selected \(textField) writing \(stringDuration)")
             guard let peripheral = peripheral else { return }
             guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
                 return item.uuid.uuidString == BluetoothDataSource.durationCharacteristicId
             }) else { return }
 
-            peripheral.writeValue(textField.data(using: .utf8)!, for: characteristic, type: .withResponse)
+            peripheral.writeValue(stringDuration.data(using: .utf8)!, for: characteristic, type: .withResponse)
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action : UIAlertAction) in
             print("User cancelled")
