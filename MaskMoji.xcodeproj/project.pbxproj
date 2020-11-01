@@ -19,6 +19,7 @@
 		83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */; };
 		83A1FD23250EBCAC0063473C /* BluetoothDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */; };
 		83BD3774250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD3773250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift */; };
+		83D7B869254D165C0034ECD6 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D7B868254D165C0034ECD6 /* SettingsTableViewController.swift */; };
 		83F3A9672537F1100088D257 /* AllEmojisCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F3A9662537F10F0088D257 /* AllEmojisCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTableViewController.swift; sourceTree = "<group>"; };
 		83A1FD22250EBCAC0063473C /* BluetoothDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothDataSource.swift; sourceTree = "<group>"; };
 		83BD3773250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothPeripheralTableViewCell.swift; sourceTree = "<group>"; };
+		83D7B868254D165C0034ECD6 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		83F3A9662537F10F0088D257 /* AllEmojisCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEmojisCollectionViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,6 +91,7 @@
 				83806560250DD19D005906D1 /* MaskMojiButtonCollectionViewController.swift */,
 				83A1FD1D250EBBDB0063473C /* BluetoothTableViewController.swift */,
 				838B6DAD25327BC4007A58E3 /* AddEmojisCollectionViewController.swift */,
+				83D7B868254D165C0034ECD6 /* SettingsTableViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 				838B6DB12533A4BC007A58E3 /* EmojiDataSource.swift in Sources */,
 				83F3A9672537F1100088D257 /* AllEmojisCollectionViewCell.swift in Sources */,
 				83806561250DD19D005906D1 /* MaskMojiButtonCollectionViewController.swift in Sources */,
+				83D7B869254D165C0034ECD6 /* SettingsTableViewController.swift in Sources */,
 				83BD3774250EE9B500FA4CAF /* BluetoothPeripheralTableViewCell.swift in Sources */,
 				83A1FD1E250EBBDB0063473C /* BluetoothTableViewController.swift in Sources */,
 				83806571250DD699005906D1 /* MaskMojiCellCollectionViewCell.swift in Sources */,

@@ -12,7 +12,7 @@ import Dispatch
 import Foundation
 import UIKit
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, SettingsDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
@@ -22,6 +22,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     var bluetoothDataSource : BluetoothDataSource? = nil
     lazy var resizeFilter = CIFilter(name: "CILanczosScaleTransform")
     let bgQueue = DispatchQueue(label: "ImageProcessing")
+    lazy var settingsView = SettingsTableViewController(style: .plain)
+    lazy var coveringView = UIView()
+    lazy var bluetoothScanController = storyboard?.instantiateViewController(withIdentifier: "BluetoothController")
     
     // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
     static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
@@ -44,6 +47,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         collectionView.dragInteractionEnabled = true
         collectionView.dragDelegate = self
         collectionView.dropDelegate = self
+        
+       let tapGesture: UIGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissSettings(_:)))
+       coveringView.addGestureRecognizer(tapGesture)
     }
 
     func chooseLastConnectedPeripheral() {
@@ -330,5 +336,46 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         print("changed my mind about choosing a picture")
         picker.dismiss(animated: true, completion: nil)
     }
+    
+    @IBAction func showSettings(_ sender : Any) {
+        let desiredSize = settingsView.view.sizeThatFits(self.view.bounds.size)
+        settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize.height)
+        settingsView.view.alpha = 0.8
+        settingsView.delegate = self
+        coveringView.frame = self.view.bounds
+        coveringView.alpha = 0.25
+        coveringView.backgroundColor = UIColor.black
+        self.view.addSubview(coveringView)
+        self.view.addSubview(settingsView.view)
+        settingsView.didMove(toParent: self)
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height - self.settingsView.view.bounds.height, width: self.view.bounds.width, height: self.settingsView.view.bounds.height)
+            self.settingsView.view.alpha = 1.0
+        })
+    }
+    
+    @objc func dismissSettings(_ sender : Any) {
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: self.settingsView.view.bounds.height)
+            self.settingsView.view.alpha = 0.8
+            self.coveringView.alpha = 0
+        }) { [self] (finished : Bool) in
+            if (finished) {
+                coveringView.removeFromSuperview()
+                settingsView.view.removeFromSuperview()
+                settingsView.didMove(toParent: self)
+            }
+        }
+    }
+    
+    func scanMasks() {
+        dismissSettings(self)
+        navigationController?.pushViewController(bluetoothScanController!, animated: true)
+    }
+    
+    func setDisplayDuration(_ duration: TimeInterval) {
+        
+    }
+    
 }
 

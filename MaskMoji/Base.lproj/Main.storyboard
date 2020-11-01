@@ -3,7 +3,7 @@
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17125"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -57,9 +57,9 @@
                     </collectionView>
                     <navigationItem key="navigationItem" title="Title" id="NDN-MY-Lie">
                         <rightBarButtonItems>
-                            <barButtonItem title="Scan" id="klu-Ek-q0Y">
+                            <barButtonItem title="Settings" image="gearshape" catalog="system" id="klu-Ek-q0Y">
                                 <connections>
-                                    <segue destination="K3w-Kp-OAa" kind="show" id="8Cd-aM-xJH"/>
+                                    <action selector="showSettings:" destination="r2H-5c-0wS" id="lzi-SN-r3X"/>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem title="Images" image="photo" catalog="system" id="VtG-iG-e8o">
@@ -132,7 +132,7 @@
         <!--Bluetooth Table View Controller-->
         <scene sceneID="XPf-EK-HyC">
             <objects>
-                <tableViewController id="K3w-Kp-OAa" customClass="BluetoothTableViewController" customModule="MaskMoji" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="BluetoothController" id="K3w-Kp-OAa" customClass="BluetoothTableViewController" customModule="MaskMoji" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="DB2-cm-fTk">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -182,6 +182,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="gearshape" catalog="system" width="128" height="121"/>
         <image name="photo" catalog="system" width="128" height="93"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
