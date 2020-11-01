@@ -57,7 +57,7 @@
                     </collectionView>
                     <navigationItem key="navigationItem" title="Title" id="NDN-MY-Lie">
                         <rightBarButtonItems>
-                            <barButtonItem title="Settings" image="gearshape" catalog="system" id="klu-Ek-q0Y">
+                            <barButtonItem title="Settings" image="gear" catalog="system" id="klu-Ek-q0Y">
                                 <connections>
                                     <action selector="showSettings:" destination="r2H-5c-0wS" id="lzi-SN-r3X"/>
                                 </connections>
@@ -182,7 +182,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="gearshape" catalog="system" width="128" height="121"/>
+        <image name="gear" catalog="system" width="128" height="119"/>
         <image name="photo" catalog="system" width="128" height="93"/>
         <systemColor name="labelColor">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
