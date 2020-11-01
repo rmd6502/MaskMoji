@@ -379,8 +379,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         let alert = UIAlertController(title: "Enter display duration", message: "Enter the display duration in seconds (decimals okay)", preferredStyle: .alert)
         alert.addTextField(configurationHandler: nil)
         alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: { [self] (action : UIAlertAction) in
-            print("User selected \(String(describing: alert.textFields![0].text))")
             guard let textField = alert.textFields?[0].text else { return }
+            print("User selected \(textField)")
             guard let peripheral = peripheral else { return }
             guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
                 return item.uuid.uuidString == BluetoothDataSource.durationCharacteristicId
