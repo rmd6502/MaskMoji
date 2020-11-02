@@ -334,8 +334,8 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     @IBAction func showSettings(_ sender : Any) {
         settingsView.view.sizeToFit()
-        let desiredSize = settingsView.view.sizeThatFits(self.view.bounds.size)
-        settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize.height)
+        let desiredSize = CGFloat(settingsView.settingsList.count) * settingsView.cellHeight
+        settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize)
         settingsView.view.alpha = 0.8
         settingsView.delegate = self
         coveringView.frame = self.view.bounds

@@ -27,6 +27,7 @@ class SettingsTableViewController: UITableViewController {
         Setting(title: "Exit", image: UIImage.init(systemName: "x.circle")),
         Setting(title: "Choose Emoji", image: UIImage.init(systemName: "keyboard"))
     ]
+    let cellHeight : CGFloat = 45
     var delegate : SettingsDelegate?
     
     let kSettingsCellIdentifier = "settingsCell"
@@ -79,6 +80,10 @@ class SettingsTableViewController: UITableViewController {
         default:
             delegate?.dismissSettings(self)
         }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return cellHeight
     }
 
     /*
