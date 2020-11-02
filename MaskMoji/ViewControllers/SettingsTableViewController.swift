@@ -12,6 +12,7 @@ protocol SettingsDelegate {
     func dismissSettings(_ sender : Any)
     func scanMasks()
     func setDisplayDuration(_ duration : TimeInterval)
+    func handleAddEmoji()
 }
 
 struct Setting {
@@ -23,7 +24,8 @@ class SettingsTableViewController: UITableViewController {
     var settingsList = [
         Setting(title: "Find Masks", image: UIImage.init(systemName: "antenna.radiowaves.left.and.right")),
         Setting(title: "Set Display Duration",image: UIImage.init(systemName: "clock.arrow.circlepath")),
-        Setting(title: "Exit", image: UIImage.init(systemName: "x.circle"))
+        Setting(title: "Exit", image: UIImage.init(systemName: "x.circle")),
+        Setting(title: "Choose Emoji", image: UIImage.init(systemName: "keyboard"))
     ]
     var delegate : SettingsDelegate?
     
@@ -72,6 +74,8 @@ class SettingsTableViewController: UITableViewController {
             delegate?.setDisplayDuration(10)
         case "Exit":
             delegate?.dismissSettings(self)
+        case "Choose Emoji":
+            delegate?.handleAddEmoji()
         default:
             delegate?.dismissSettings(self)
         }

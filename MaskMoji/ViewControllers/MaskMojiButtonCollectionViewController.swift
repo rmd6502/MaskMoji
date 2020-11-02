@@ -27,7 +27,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     lazy var bluetoothScanController = storyboard?.instantiateViewController(withIdentifier: "BluetoothController")
     
     // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
-    static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
+    static var emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -102,10 +102,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
-        if indexPath.item == 0 {
-            handleAddEmoji()
-            return
-        }
         guard let peripheral = self.peripheral else {
             self.chooseLastConnectedPeripheral()
             subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
@@ -135,6 +131,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     func handleAddEmoji() {
+        dismissSettings(self)
         performSegue(withIdentifier: "AddEmojis", sender: nil)
     }
     
@@ -208,7 +205,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     func collectionView(_ collectionView: UICollectionView,
       itemsForBeginning session: UIDragSession,
       at indexPath: IndexPath) -> [UIDragItem] {
-        if indexPath.item == 0 { return [] }
         let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
         let provider = NSItemProvider(object: emoji as NSItemProviderWriting)
         let dragItem = UIDragItem(itemProvider: provider)
@@ -222,7 +218,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         guard let destinationIndexPath = coordinator.destinationIndexPath else {
             return
         }
-        if destinationIndexPath.item == 0 { return }
         coordinator.items.forEach { (dropItem) in
             guard let dropIndexPath = dropItem.sourceIndexPath else { return }
             let emoji = MaskMojiButtonCollectionViewController.emojis[dropIndexPath.item]
@@ -250,7 +245,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     // MARK: - AddEmojisCollectionDelegate
     
     func addEmoji(_ emoji: String) {
-        MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: 1)
+        MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: 0)
         UserDefaults.standard.set(MaskMojiButtonCollectionViewController.emojis, forKey: kEmojiCollectionKey)
         self.collectionView.reloadData()
     }
@@ -338,6 +333,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     @IBAction func showSettings(_ sender : Any) {
+        settingsView.view.sizeToFit()
         let desiredSize = settingsView.view.sizeThatFits(self.view.bounds.size)
         settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize.height)
         settingsView.view.alpha = 0.8
