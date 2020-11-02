@@ -71,6 +71,7 @@
                     </navigationItem>
                     <connections>
                         <segue destination="WJD-ER-5eT" kind="show" identifier="AddEmojis" id="pDC-3R-1Nf"/>
+                        <segue destination="K3w-Kp-OAa" kind="show" identifier="ScanBluetooth" id="skW-Me-IoZ"/>
                     </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1tk-2h-7fx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

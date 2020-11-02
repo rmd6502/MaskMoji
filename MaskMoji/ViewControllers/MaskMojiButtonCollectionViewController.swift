@@ -349,7 +349,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         self.view.addSubview(settingsView.view)
         settingsView.didMove(toParent: self)
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: { [self] in
-            settingsView.view.frame = CGRect(x: 0, y: view.bounds.height - settingsView.view.bounds.height, width: view.bounds.width, height: settingsView.view.bounds.height)
+            settingsView.view.frame = CGRect(x: 0, y: view.bounds.height - settingsView.view.bounds.height - self.view.safeAreaInsets.bottom, width: view.bounds.width, height: settingsView.view.bounds.height)
             settingsView.view.alpha = 1.0
             coveringView.alpha = 0.25
         })
@@ -371,7 +371,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     func scanMasks() {
         dismissSettings(self)
-        navigationController?.pushViewController(bluetoothScanController!, animated: true)
+        self.performSegue(withIdentifier: "ScanBluetooth", sender: self)
     }
     
     func setDisplayDuration(_ duration: TimeInterval) {
