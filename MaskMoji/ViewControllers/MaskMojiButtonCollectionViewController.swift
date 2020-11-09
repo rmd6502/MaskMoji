@@ -12,7 +12,7 @@ import Dispatch
 import Foundation
 import UIKit
 
-class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+class MaskMojiButtonCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout, BluetoothVCDelegate, CBPeripheralDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate, AddEmojisCollectionDelegate, SettingsDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
     var peripheral : CBPeripheral? = nil
     var subtitleLabel : UILabel? = nil
@@ -22,9 +22,12 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     var bluetoothDataSource : BluetoothDataSource? = nil
     lazy var resizeFilter = CIFilter(name: "CILanczosScaleTransform")
     let bgQueue = DispatchQueue(label: "ImageProcessing")
+    lazy var settingsView = SettingsTableViewController(style: .plain)
+    lazy var coveringView = UIView()
+    lazy var bluetoothScanController = storyboard?.instantiateViewController(withIdentifier: "BluetoothController")
     
     // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
-    static var emojis : [String] = ["➕","😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
+    static var emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +47,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         collectionView.dragInteractionEnabled = true
         collectionView.dragDelegate = self
         collectionView.dropDelegate = self
+        
+       let tapGesture: UIGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissSettings(_:)))
+       coveringView.addGestureRecognizer(tapGesture)
     }
 
     func chooseLastConnectedPeripheral() {
@@ -96,10 +102,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         print("Selected item at \(indexPath)");
-        if indexPath.item == 0 {
-            handleAddEmoji()
-            return
-        }
         guard let peripheral = self.peripheral else {
             self.chooseLastConnectedPeripheral()
             subtitleLabel?.text = NSLocalizedString("Not Connected", tableName: "Standard", bundle: Bundle.main, value: "Not Connected", comment: "Connection status")
@@ -129,6 +131,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     }
     
     func handleAddEmoji() {
+        dismissSettings(self)
         performSegue(withIdentifier: "AddEmojis", sender: nil)
     }
     
@@ -202,7 +205,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     func collectionView(_ collectionView: UICollectionView,
       itemsForBeginning session: UIDragSession,
       at indexPath: IndexPath) -> [UIDragItem] {
-        if indexPath.item == 0 { return [] }
         let emoji = MaskMojiButtonCollectionViewController.emojis[indexPath.item]
         let provider = NSItemProvider(object: emoji as NSItemProviderWriting)
         let dragItem = UIDragItem(itemProvider: provider)
@@ -216,7 +218,6 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         guard let destinationIndexPath = coordinator.destinationIndexPath else {
             return
         }
-        if destinationIndexPath.item == 0 { return }
         coordinator.items.forEach { (dropItem) in
             guard let dropIndexPath = dropItem.sourceIndexPath else { return }
             let emoji = MaskMojiButtonCollectionViewController.emojis[dropIndexPath.item]
@@ -244,7 +245,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     // MARK: - AddEmojisCollectionDelegate
     
     func addEmoji(_ emoji: String) {
-        MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: 1)
+        MaskMojiButtonCollectionViewController.emojis.insert(emoji, at: 0)
         UserDefaults.standard.set(MaskMojiButtonCollectionViewController.emojis, forKey: kEmojiCollectionKey)
         self.collectionView.reloadData()
     }
@@ -330,5 +331,67 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         print("changed my mind about choosing a picture")
         picker.dismiss(animated: true, completion: nil)
     }
+    
+    @IBAction func showSettings(_ sender : Any) {
+        settingsView.view.sizeToFit()
+        let desiredSize = CGFloat(settingsView.settingsList.count) * settingsView.cellHeight
+        settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize)
+        settingsView.view.alpha = 0.8
+        settingsView.delegate = self
+        coveringView.frame = self.view.bounds
+        coveringView.alpha = 0
+        coveringView.backgroundColor = UIColor.black
+        self.view.addSubview(coveringView)
+        self.view.addSubview(settingsView.view)
+        settingsView.didMove(toParent: self)
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: { [self] in
+            settingsView.view.frame = CGRect(x: 0, y: view.bounds.height - settingsView.view.bounds.height - self.view.safeAreaInsets.bottom, width: view.bounds.width, height: settingsView.view.bounds.height)
+            settingsView.view.alpha = 1.0
+            coveringView.alpha = 0.25
+        })
+    }
+    
+    @objc func dismissSettings(_ sender : Any) {
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1.0, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: self.settingsView.view.bounds.height)
+            self.settingsView.view.alpha = 0.8
+            self.coveringView.alpha = 0
+        }) { [self] (finished : Bool) in
+            if (finished) {
+                coveringView.removeFromSuperview()
+                settingsView.view.removeFromSuperview()
+                settingsView.didMove(toParent: nil)
+            }
+        }
+    }
+    
+    func scanMasks() {
+        dismissSettings(self)
+        self.performSegue(withIdentifier: "ScanBluetooth", sender: self)
+    }
+    
+    func setDisplayDuration(_ duration: TimeInterval) {
+        dismissSettings(self)
+        let alert = UIAlertController(title: "Enter display duration", message: "Enter the display duration in seconds (decimals okay)", preferredStyle: .alert)
+        alert.addTextField(configurationHandler: nil)
+        alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: { [self] (action : UIAlertAction) in
+            guard let textField = alert.textFields?[0].text else { return }
+            let writeDuration = Int((Double(textField) ?? 0) * 1000)
+            let stringDuration = String(writeDuration)
+            print("User selected \(textField) writing \(stringDuration)")
+            guard let peripheral = peripheral else { return }
+            guard let characteristic : CBCharacteristic = peripheral.services?.first?.characteristics?.first(where: { (item : CBCharacteristic) -> Bool in
+                return item.uuid.uuidString == BluetoothDataSource.durationCharacteristicId
+            }) else { return }
+
+            peripheral.writeValue(stringDuration.data(using: .utf8)!, for: characteristic, type: .withResponse)
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action : UIAlertAction) in
+            print("User cancelled")
+            alert.dismiss(animated: false, completion: nil)
+        }))
+        self.present(alert, animated: false, completion: nil)
+    }
+    
 }
 
