@@ -59,7 +59,7 @@
                         <rightBarButtonItems>
                             <barButtonItem title="Settings" image="gear" catalog="system" id="klu-Ek-q0Y">
                                 <connections>
-                                    <action selector="showSettings:" destination="r2H-5c-0wS" id="lzi-SN-r3X"/>
+                                    <action selector="toggleSettings:" destination="r2H-5c-0wS" id="Kcq-Jw-Geh"/>
                                 </connections>
                             </barButtonItem>
                             <barButtonItem title="Images" image="photo" catalog="system" id="VtG-iG-e8o">

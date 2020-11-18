@@ -24,8 +24,8 @@ class SettingsTableViewController: UITableViewController {
     var settingsList = [
         Setting(title: "Find Masks", image: UIImage.init(systemName: "antenna.radiowaves.left.and.right")),
         Setting(title: "Set Display Duration",image: UIImage.init(systemName: "clock.arrow.circlepath")),
+        Setting(title: "Choose Emoji", image: UIImage.init(systemName: "keyboard")),
         Setting(title: "Exit", image: UIImage.init(systemName: "x.circle")),
-        Setting(title: "Choose Emoji", image: UIImage.init(systemName: "keyboard"))
     ]
     let cellHeight : CGFloat = 45
     var delegate : SettingsDelegate?

@@ -25,6 +25,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
     lazy var settingsView = SettingsTableViewController(style: .plain)
     lazy var coveringView = UIView()
     lazy var bluetoothScanController = storyboard?.instantiateViewController(withIdentifier: "BluetoothController")
+    var settingsVisible = false
     
     // Initial set of emojis. Can be overridden by kEmojiCollectionKey in UserDefaults.standard.
     static var emojis : [String] = ["😀", "🤣","😍","😎","😏","😞","😟","😕","💩","🤮","😡","😱", "😂","🤣","🙃","🥰","😘","😛","😜","🤪","🤓","😎","🥳","😒","🙁","😢","😭","😤","🤯","😴","🧐","😳","😬","🙄","🤫","maskmoji","byedon"];
@@ -332,7 +333,15 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
         picker.dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func showSettings(_ sender : Any) {
+    @IBAction func toggleSettings(_ sender : Any) {
+        if settingsVisible {
+            dismissSettings(sender)
+        } else {
+            showSettings(sender)
+        }
+    }
+    
+    func showSettings(_ sender : Any) {
         settingsView.view.sizeToFit()
         let desiredSize = CGFloat(settingsView.settingsList.count) * settingsView.cellHeight
         settingsView.view.frame = CGRect(x: 0, y: self.view.bounds.height, width: self.view.bounds.width, height: desiredSize)
@@ -348,7 +357,9 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
             settingsView.view.frame = CGRect(x: 0, y: view.bounds.height - settingsView.view.bounds.height - self.view.safeAreaInsets.bottom, width: view.bounds.width, height: settingsView.view.bounds.height)
             settingsView.view.alpha = 1.0
             coveringView.alpha = 0.25
-        })
+        }) { [self] (finished) in
+            settingsVisible = true
+        }
     }
     
     @objc func dismissSettings(_ sender : Any) {
@@ -361,6 +372,7 @@ class MaskMojiButtonCollectionViewController: UICollectionViewController, UIColl
                 coveringView.removeFromSuperview()
                 settingsView.view.removeFromSuperview()
                 settingsView.didMove(toParent: nil)
+                settingsVisible = false
             }
         }
     }
