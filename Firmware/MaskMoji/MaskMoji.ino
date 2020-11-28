@@ -4,6 +4,7 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <esp_pm.h>
 #include <sstream>
+#include <Preferences.h>
 
 // Bluetooth
 #include <BLEDevice.h>
@@ -66,6 +67,10 @@ class Callbacks : public BLECharacteristicCallbacks {
       } else if (uuid == CHARACTERISTIC_DURATION_UUID) {
         uint32_t newDuration = strtoul(value.c_str(), nullptr, 10);
         if (newDuration >= 500) {
+          Preferences preferences;
+          preferences.begin("MaskMojiSetting", false);
+          Serial.print("save duration "); Serial.println(preferences.putULong("duration", newDuration));
+          preferences.end();
           display_duration_ms = newDuration;
         }
       }
@@ -117,6 +122,14 @@ void setup()
 
   sleepTime = 1;
   pinMode(35, INPUT);
+
+  Preferences preferences;
+  preferences.begin("MaskMojiSetting");
+  uint32_t newDuration = preferences.getULong("duration");
+  preferences.end();
+  if (newDuration >= 500) {
+    display_duration_ms = newDuration;
+  }
 
   esp_pm_config_esp32_t config;
   config.max_freq_mhz= 80;
